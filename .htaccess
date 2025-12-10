@@ -1,0 +1,22 @@
+# MCPeek - Static file serving with CORS support
+
+RewriteEngine On
+
+# Serve index.html for directory requests
+DirectoryIndex index.html
+
+# Allow CORS for all origins (needed for testing MCP servers)
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Accept, mcp-protocol-version"
+
+    # Allow inline styles and scripts (needed for the app to work)
+    Header always set Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src *"
+</IfModule>
+
+# Handle preflight OPTIONS requests
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ - [R=200,L]
+</IfModule>

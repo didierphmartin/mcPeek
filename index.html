@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCPeek - Peek into MCP Protocol Compliance</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 90%;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            overflow-x: hidden;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .status.info { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+        .status.success { background: #d4edda; border-left: 4px solid #28a745; }
+        .status.error { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .status.warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            box-sizing: border-box;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+
+        input, select, textarea {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .tools-list {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .tool-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: #f8f9fa;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+        .tool-name { font-weight: bold; color: #007bff; }
+        .tool-desc { margin: 5px 0; color: #666; }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #007bff;
+            max-width: 100%;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        /* JSON Syntax Highlighting */
+        .json-key { color: #d73a49; font-weight: bold; }
+        .json-string { color: #032f62; }
+        .json-number { color: #005cc5; }
+        .json-boolean { color: #e36209; font-weight: bold; }
+        .json-null { color: #6f42c1; font-style: italic; }
+        
+        .auth-section {
+            border: 2px dashed #007bff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(3px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Pulse animation for dots */
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        /* Split panel constraints */
+        .split-panel-left,
+        .split-panel-right {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Ensure all response containers respect boundaries */
+        #log-output,
+        #validation-results,
+        #server-details,
+        #tools-list {
+            max-width: 100%;
+            overflow-x: auto;
+            word-wrap: break-word;
+        }
+
+        /* Ensure tool result divs don't overflow */
+        [id^="result-"] {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        details {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Ensure split view containers don't overflow */
+        [id^="split-view-"] {
+            max-width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loading-text">Processing<span class="loading-dots"></span></div>
+            <div class="loading-subtext" id="loading-subtext">Please wait...</div>
+        </div>
+    </div>
+
+    <!-- Load MCP Protocol Validator -->
+    <script src="MCPProtocolValidator.js"></script>
+    <!-- Load SSE MCP Client -->
+    <script src="SSEMCPClient.js"></script>
+    <!-- Load OAuth Client -->
+    <script src="MCPOAuthClient.js"></script>
+    <div class="container">
+        <h1>🔍 MCPeek</h1>
+        <p style="font-size: 18px; color: #666; margin: -10px 0 20px 0;">Peek into MCP Protocol Compliance</p>
+        <p>A browser-based tool for testing and debugging MCP (Model Context Protocol) servers with full protocol validation.</p>
+        
+        <div class="auth-section">
+            <h2>🔐 Server & Authentication</h2>
+
+            <!-- Add Custom Server Section -->
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #ddd;">
+                <h3 style="margin-top: 0; font-size: 16px; color: #007bff;">➕ Add Custom MCP Server</h3>
+                <div style="display: grid; gap: 10px;">
+                    <div>
+                        <label for="custom-server-name" style="font-weight: bold; display: block; margin-bottom: 5px;">Server Name:</label>
+                        <input type="text"
+                               id="custom-server-name"
+                               placeholder="e.g., My Custom Server"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="custom-server-url" style="font-weight: bold; display: block; margin-bottom: 5px;">Server URL:</label>
+                        <input type="url"
+                               id="custom-server-url"
+                               placeholder="e.g., https://example.com/mcp or http://localhost:3000/sse"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="custom-server-desc" style="font-weight: bold; display: block; margin-bottom: 5px;">Description (optional):</label>
+                        <input type="text"
+                               id="custom-server-desc"
+                               placeholder="Brief description of the server"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <button onclick="addCustomServer()" style="background: #28a745;">
+                        ➕ Add Server
+                    </button>
+                </div>
+
+                <!-- Custom Servers List -->
+                <div id="custom-servers-list" style="margin-top: 15px;"></div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="server-select" style="font-weight: bold;">Select MCP Server:</label>
+                <select id="server-select" onchange="changeServer()" style="margin-left: 10px; padding: 8px; min-width: 200px;">
+                </select>
+            </div>
+
+            <div id="auth-status" class="status info">
+                <strong>Status:</strong> Not connected
+            </div>
+
+            <button id="auth-btn" onclick="startOAuth()">Connect</button>
+            <button id="refresh-btn" onclick="refreshToken()" disabled>Refresh Token</button>
+            <button id="logout-btn" onclick="logout()" disabled>Disconnect</button>
+            <button id="reset-btn" onclick="resetSession()" style="background: #dc3545;">Reset</button>
+        </div>
+        
+        <div id="server-info" style="display: none;">
+            <h2>📡 Server Information</h2>
+            <div id="server-details"></div>
+        </div>
+
+        <div id="protocol-validation" style="display: none;">
+            <h2>🔍 Protocol Validation</h2>
+            <div id="validation-results"></div>
+        </div>
+
+        <div id="tools-section" style="display: none;">
+            <h2>🛠️ Available Tools</h2>
+            <div id="tools-list" class="tools-list"></div>
+        </div>
+
+        <div id="logs">
+            <h2>📋 Activity Log</h2>
+            <pre id="log-output">Starting MCP Client...</pre>
+        </div>
+    </div>
+
+    <script>
+        // Simple MCP client state
+        let currentServer = null;
+        let tools = [];
+        let isConnected = false;
+        let sseClient = null; // SSE MCP client instance
+        let mcpValidator = new MCPProtocolValidator(); // Protocol validator
+        let oauthClients = {}; // OAuth clients for each server
+
+        let servers = {};
+
+
+        // === CUSTOM SERVER MANAGEMENT ===
+
+        /**
+         * Load custom servers from localStorage
+         */
+        function loadCustomServers() {
+            try {
+                const customServersJson = localStorage.getItem('mcp_custom_servers');
+                if (customServersJson) {
+                    const customServers = JSON.parse(customServersJson);
+
+                    // Add custom servers to the servers object
+                    for (const [key, server] of Object.entries(customServers)) {
+                        servers[key] = server;
+                    }
+
+                    log(`✅ Loaded ${Object.keys(customServers).length} custom server(s) from storage`);
+
+                    // Set first server as current if none selected
+                    if (!currentServer && Object.keys(servers).length > 0) {
+                        currentServer = Object.keys(servers)[0];
+                    }
+
+                    updateServerDropdown();
+                    displayCustomServersList();
+                } else {
+                    log(`ℹ️ No custom servers found. Add a server to get started.`);
+                }
+            } catch (error) {
+                log(`⚠️ Failed to load custom servers: ${error.message}`, 'warning');
+            }
+        }
+
+        /**
+         * Save custom servers to localStorage
+         */
+        function saveCustomServers() {
+            try {
+                // Save all servers
+                localStorage.setItem('mcp_custom_servers', JSON.stringify(servers));
+                log(`💾 Saved ${Object.keys(servers).length} custom server(s)`);
+            } catch (error) {
+                log(`❌ Failed to save custom servers: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Add a custom server
+         */
+        function addCustomServer() {
+            const nameInput = document.getElementById('custom-server-name');
+            const urlInput = document.getElementById('custom-server-url');
+            const descInput = document.getElementById('custom-server-desc');
+
+            const name = nameInput.value.trim();
+            const url = urlInput.value.trim();
+            const description = descInput.value.trim();
+
+            // Validate inputs
+            if (!name) {
+                log('⚠️ Please enter a server name', 'warning');
+                nameInput.focus();
+                return;
+            }
+
+            if (!url) {
+                log('⚠️ Please enter a server URL', 'warning');
+                urlInput.focus();
+                return;
+            }
+
+            // Validate URL format
+            try {
+                new URL(url);
+            } catch (error) {
+                log('⚠️ Invalid URL format. Please enter a valid URL (e.g., https://example.com/mcp)', 'warning');
+                urlInput.focus();
+                return;
+            }
+
+            // Generate a unique key for the server
+            const serverKey = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+
+            // Add to servers object
+            servers[serverKey] = {
+                name: name,
+                url: url,
+                description: description || `Custom MCP server: ${name}`,
+                custom: true
+            };
+
+            // Save to localStorage
+            saveCustomServers();
+
+            // Update UI
+            updateServerDropdown();
+            displayCustomServersList();
+
+            // Clear form
+            nameInput.value = '';
+            urlInput.value = '';
+            descInput.value = '';
+
+            log(`✅ Added custom server: ${name} (${url})`);
+
+            // Auto-select the new server
+            document.getElementById('server-select').value = serverKey;
+            currentServer = serverKey;
+        }
+
+        /**
+         * Remove a custom server
+         */
+        function removeCustomServer(serverKey) {
+            if (!servers[serverKey]) {
+                return;
+            }
+
+            const serverName = servers[serverKey].name;
+
+            // Disconnect if currently connected to this server
+            if (currentServer === serverKey && isConnected) {
+                logout();
+            }
+
+            // Remove from servers object
+            delete servers[serverKey];
+
+            // Save to localStorage
+            saveCustomServers();
+
+            // Update UI
+            updateServerDropdown();
+            displayCustomServersList();
+
+            // Switch to first available server if removed server was selected
+            if (currentServer === serverKey) {
+                const firstServerKey = Object.keys(servers)[0];
+                if (firstServerKey) {
+                    currentServer = firstServerKey;
+                    document.getElementById('server-select').value = firstServerKey;
+                } else {
+                    currentServer = null;
+                }
+            }
+
+            log(`🗑️ Removed custom server: ${serverName}`);
+        }
+
+        /**
+         * Update the server dropdown with all available servers
+         */
+        function updateServerDropdown() {
+            const serverSelect = document.getElementById('server-select');
+            const currentValue = serverSelect.value;
+
+            // Clear existing options
+            serverSelect.innerHTML = '';
+
+            // Add all servers to dropdown
+            for (const [key, server] of Object.entries(servers)) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = server.name + (server.custom ? ' (Custom)' : '');
+                serverSelect.appendChild(option);
+            }
+
+            // Restore previous selection if still available
+            if (servers[currentValue]) {
+                serverSelect.value = currentValue;
+            }
+        }
+
+        /**
+         * Display list of custom servers with edit and delete buttons
+         */
+        function displayCustomServersList() {
+            const listDiv = document.getElementById('custom-servers-list');
+
+            // Get custom servers
+            const customServers = Object.entries(servers).filter(([key, server]) => server.custom);
+
+            if (customServers.length === 0) {
+                listDiv.innerHTML = '';
+                return;
+            }
+
+            listDiv.innerHTML = `
+                <h4 style="font-size: 14px; margin-bottom: 10px; color: #555;">Custom Servers:</h4>
+                <div style="display: grid; gap: 8px;">
+                    ${customServers.map(([key, server]) => `
+                        <div id="server-card-${key}" style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div id="server-name-${key}" style="font-weight: bold; color: #007bff;">${server.name}</div>
+                                <div id="server-url-${key}" style="font-size: 12px; color: #666; word-break: break-all;">${server.url}</div>
+                                <div id="server-desc-${key}" style="font-size: 11px; color: #999; margin-top: 2px;">${server.description || ''}</div>
+                            </div>
+                            <div style="display: flex; gap: 5px; margin-left: 10px;">
+                                <button onclick="editCustomServer('${key}')"
+                                        style="background: #007bff; padding: 5px 10px; font-size: 12px;">
+                                    ✏️ Edit
+                                </button>
+                                <button onclick="removeCustomServer('${key}')"
+                                        style="background: #dc3545; padding: 5px 10px; font-size: 12px;">
+                                    🗑️ Remove
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        /**
+         * Enable edit mode for a custom server
+         */
+        function editCustomServer(serverKey) {
+            if (!servers[serverKey]) {
+                return;
+            }
+
+            const server = servers[serverKey];
+            const cardDiv = document.getElementById(`server-card-${serverKey}`);
+
+            // Replace the card content with editable inputs
+            cardDiv.innerHTML = `
+                <div style="flex: 1;">
+                    <div style="margin-bottom: 8px;">
+                        <label style="font-weight: bold; font-size: 11px; color: #555;">Server Name:</label>
+                        <input type="text"
+                               id="edit-name-${serverKey}"
+                               value="${server.name}"
+                               style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px;">
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label style="font-weight: bold; font-size: 11px; color: #555;">Server URL:</label>
+                        <input type="url"
+                               id="edit-url-${serverKey}"
+                               value="${server.url}"
+                               style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px;">
+                    </div>
+                    <div>
+                        <label style="font-weight: bold; font-size: 11px; color: #555;">Description:</label>
+                        <input type="text"
+                               id="edit-desc-${serverKey}"
+                               value="${server.description || ''}"
+                               style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 5px; margin-left: 10px; align-items: flex-start;">
+                    <button onclick="saveCustomServer('${serverKey}')"
+                            style="background: #28a745; padding: 5px 10px; font-size: 12px;">
+                        💾 Save
+                    </button>
+                    <button onclick="cancelEditCustomServer('${serverKey}')"
+                            style="background: #6c757d; padding: 5px 10px; font-size: 12px;">
+                        ✖️ Cancel
+                    </button>
+                </div>
+            `;
+
+            log(`✏️ Editing server: ${server.name}`);
+        }
+
+        /**
+         * Save changes to a custom server
+         */
+        function saveCustomServer(serverKey) {
+            if (!servers[serverKey]) {
+                return;
+            }
+
+            const nameInput = document.getElementById(`edit-name-${serverKey}`);
+            const urlInput = document.getElementById(`edit-url-${serverKey}`);
+            const descInput = document.getElementById(`edit-desc-${serverKey}`);
+
+            const newName = nameInput.value.trim();
+            const newUrl = urlInput.value.trim();
+            const newDesc = descInput.value.trim();
+
+            // Validate inputs
+            if (!newName) {
+                log('⚠️ Server name cannot be empty', 'warning');
+                nameInput.focus();
+                return;
+            }
+
+            if (!newUrl) {
+                log('⚠️ Server URL cannot be empty', 'warning');
+                urlInput.focus();
+                return;
+            }
+
+            // Validate URL format
+            try {
+                new URL(newUrl);
+            } catch (error) {
+                log('⚠️ Invalid URL format. Please enter a valid URL', 'warning');
+                urlInput.focus();
+                return;
+            }
+
+            const oldName = servers[serverKey].name;
+            const oldUrl = servers[serverKey].url;
+
+            // Update server object
+            servers[serverKey].name = newName;
+            servers[serverKey].url = newUrl;
+            servers[serverKey].description = newDesc;
+
+            // Save to localStorage
+            saveCustomServers();
+
+            // Update UI
+            updateServerDropdown();
+            displayCustomServersList();
+
+            log(`✅ Updated server: ${newName}${oldUrl !== newUrl ? ` (URL changed from ${oldUrl} to ${newUrl})` : ''}`);
+
+            // If this is the currently selected server and connected, warn about reconnecting
+            if (currentServer === serverKey && isConnected && oldUrl !== newUrl) {
+                log('⚠️ URL was changed. Please disconnect and reconnect to use the new URL.', 'warning');
+            }
+        }
+
+        /**
+         * Cancel editing a custom server
+         */
+        function cancelEditCustomServer(serverKey) {
+            if (!servers[serverKey]) {
+                return;
+            }
+
+            // Just refresh the display to show the original values
+            displayCustomServersList();
+            log(`✖️ Cancelled editing server: ${servers[serverKey].name}`);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            log('🚀 MCP Client initialized');
+            loadCustomServers(); // Load custom servers from localStorage
+            updateAuthUI();
+        });
+
+        // Global functions for UI
+        function changeServer() {
+            const serverSelect = document.getElementById('server-select');
+            const selectedServer = serverSelect.value;
+            
+            log(`🔄 Switching to ${selectedServer} server`);
+            
+            // Disconnect current server
+            logout();
+            
+            // Change server
+            currentServer = selectedServer;
+            
+            log(`✅ Switched to ${servers[selectedServer].name}`);
+        }
+
+        async function startOAuth() {
+            try {
+                if (!currentServer || !servers[currentServer]) {
+                    log('❌ No server selected. Please add a custom server first.', 'error');
+                    return;
+                }
+
+                const server = servers[currentServer];
+                showLoading('Connecting to Server', `Establishing connection to ${server.name}...`);
+                log(`🔍 Connecting to ${server.name}...`);
+
+                // Detect if this is an SSE server
+                if (SSEMCPClient.isSSEServer(server.url)) {
+                    log(`📡 Detected SSE transport for ${server.name}`);
+                    connectSSEServer(server);
+                    return;
+                }
+
+                // Use direct HTTP transport
+                log(`🌐 Using HTTP transport for ${server.name}`);
+                await connectHTTPServer(server);
+
+            } catch (error) {
+                hideLoading();
+                log(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        // === OAUTH HELPER FUNCTIONS ===
+
+        /**
+         * Get or create OAuth client for a server
+         */
+        function getOAuthClient(serverUrl) {
+            if (!oauthClients[serverUrl]) {
+                oauthClients[serverUrl] = new MCPOAuthClient(serverUrl, {
+                    clientName: 'MCPeek',
+                    clientVersion: '2.0.0',
+                    logger: {
+                        log: (msg) => log(msg),
+                        error: (msg, error) => log(`${msg} ${error?.message || ''}`, 'error')
+                    }
+                });
+            }
+            return oauthClients[serverUrl];
+        }
+
+        /**
+         * Get access token for a server (if available)
+         */
+        async function getAccessTokenForServer(serverUrl) {
+            const oauthClient = getOAuthClient(serverUrl);
+
+            try {
+                // Try to get existing token (will refresh if needed)
+                return await oauthClient.getAccessToken();
+            } catch (error) {
+                // No token available - will authorize when 401 is received
+                return null;
+            }
+        }
+
+        /**
+         * Handle OAuth authorization (401 response)
+         */
+        async function handleOAuthAuthorization(serverUrl, wwwAuthHeader) {
+            const oauthClient = getOAuthClient(serverUrl);
+
+            // Parse scopes from WWW-Authenticate header if available
+            let requiredScopes = null;
+            if (wwwAuthHeader) {
+                const scopeMatch = wwwAuthHeader.match(/scope="([^"]+)"/);
+                if (scopeMatch) {
+                    requiredScopes = scopeMatch[1];
+                    log(`  Required scopes: ${requiredScopes}`);
+                }
+            }
+
+            // Start OAuth authorization flow
+            await oauthClient.authorize(requiredScopes);
+        }
+
+        /**
+         * Handle step-up authorization (403 insufficient_scope)
+         */
+        async function handleStepUpAuthorization(serverUrl, wwwAuthHeader) {
+            const oauthClient = getOAuthClient(serverUrl);
+
+            // Parse required scopes from WWW-Authenticate header
+            let requiredScopes = null;
+            if (wwwAuthHeader) {
+                const scopeMatch = wwwAuthHeader.match(/scope="([^"]+)"/);
+                if (scopeMatch) {
+                    requiredScopes = scopeMatch[1];
+                    log(`  Additional scopes required: ${requiredScopes}`);
+                }
+            }
+
+            if (!requiredScopes) {
+                throw new Error('Insufficient scope but no scopes specified in WWW-Authenticate header');
+            }
+
+            // Step-up authorization with additional scopes
+            await oauthClient.handleStepUpAuthorization(requiredScopes);
+        }
+
+        /**
+         * Connect to HTTP-based MCP server directly using JSON-RPC
+         * Implements full MCP protocol with validation and OAuth support
+         */
+        async function connectHTTPServer(server) {
+            const validationResults = [];
+
+            try {
+                // Clear previous validation results
+                mcpValidator.clearLog();
+
+                // Step 1: Initialize connection
+                log(`🔌 Step 1: Initializing connection to ${server.name}...`);
+
+                const initRequest = {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'initialize',
+                    params: {
+                        protocolVersion: '2024-11-05',
+                        capabilities: { tools: {} },
+                        clientInfo: {
+                            name: 'MCPeek',
+                            version: '2.0.0'
+                        }
+                    }
+                };
+
+                // Build headers
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'mcp-protocol-version': '2024-11-05'  // MCP protocol header
+                };
+
+                // Add OAuth token if available
+                const accessToken = await getAccessTokenForServer(server.url);
+                if (accessToken) {
+                    headers['Authorization'] = `Bearer ${accessToken}`;
+                    log(`🔐 Using OAuth access token`);
+                }
+
+                const initResponse = await fetch(server.url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(initRequest)
+                });
+
+                // Check for OAuth requirement (401 Unauthorized)
+                if (initResponse.status === 401) {
+                    log(`🔐 Server requires OAuth authorization`);
+                    const wwwAuth = initResponse.headers.get('WWW-Authenticate');
+                    log(`  WWW-Authenticate: ${wwwAuth}`);
+
+                    // Handle OAuth authorization
+                    await handleOAuthAuthorization(server.url, wwwAuth);
+
+                    // Retry connection after authorization
+                    log(`🔄 Retrying connection with OAuth token...`);
+                    return await connectHTTPServer(server);
+                }
+
+                // Check for insufficient scope (403 Forbidden)
+                if (initResponse.status === 403) {
+                    const wwwAuth = initResponse.headers.get('WWW-Authenticate');
+                    if (wwwAuth && wwwAuth.includes('insufficient_scope')) {
+                        log(`🔼 Insufficient OAuth scope detected`);
+                        await handleStepUpAuthorization(server.url, wwwAuth);
+
+                        // Retry connection
+                        log(`🔄 Retrying connection with updated scopes...`);
+                        return await connectHTTPServer(server);
+                    }
+                }
+
+                if (!initResponse.ok) {
+                    throw new Error(`HTTP ${initResponse.status}: ${initResponse.statusText}`);
+                }
+
+                const initResult = await initResponse.json();
+                log(`📥 Received initialize response`);
+
+                // Validate initialize response
+                const initValidation = mcpValidator.validateInitializeResponse(initResult);
+                mcpValidator.logValidation('Initialize Response', initValidation);
+                validationResults.push(mcpValidator.generateValidationReport(initValidation, 'Initialize Response'));
+
+                if (!initValidation.valid) {
+                    log(`⚠️ Initialize response has protocol violations`, 'warning');
+                }
+
+                log(`✅ Server: ${initResult.result?.serverInfo?.name || 'Unknown'} v${initResult.result?.serverInfo?.version || '?'}`);
+
+                // Step 2: Send notifications/initialized (MCP protocol requirement)
+                log(`🔔 Step 2: Sending notifications/initialized...`);
+
+                const notificationRequest = {
+                    jsonrpc: '2.0',
+                    method: 'notifications/initialized',
+                    params: {}
+                    // Note: notifications don't have an 'id' field
+                };
+
+                // Send notification (no response expected)
+                const notifHeaders = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'mcp-protocol-version': '2024-11-05'
+                };
+                if (accessToken) {
+                    notifHeaders['Authorization'] = `Bearer ${accessToken}`;
+                }
+
+                await fetch(server.url, {
+                    method: 'POST',
+                    headers: notifHeaders,
+                    body: JSON.stringify(notificationRequest)
+                });
+
+                log(`✅ Notification sent (MCP handshake complete)`);
+
+                // Step 3: Request tools list
+                log(`🛠️ Step 3: Requesting tools from ${server.name}...`);
+
+                const toolsRequest = {
+                    jsonrpc: '2.0',
+                    id: 2,
+                    method: 'tools/list',
+                    params: {}
+                };
+
+                const toolsHeaders = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'mcp-protocol-version': '2024-11-05'
+                };
+                if (accessToken) {
+                    toolsHeaders['Authorization'] = `Bearer ${accessToken}`;
+                }
+
+                const toolsResponse = await fetch(server.url, {
+                    method: 'POST',
+                    headers: toolsHeaders,
+                    body: JSON.stringify(toolsRequest)
+                });
+
+                if (!toolsResponse.ok) {
+                    throw new Error(`HTTP ${toolsResponse.status}: ${toolsResponse.statusText}`);
+                }
+
+                const toolsResult = await toolsResponse.json();
+                log(`📥 Received tools/list response`);
+
+                // Validate tools/list response
+                const toolsValidation = mcpValidator.validateToolsListResponse(toolsResult);
+                mcpValidator.logValidation('Tools List Response', toolsValidation);
+                validationResults.push(mcpValidator.generateValidationReport(toolsValidation, 'Tools List Response'));
+
+                if (!toolsValidation.valid) {
+                    log(`⚠️ Tools list response has protocol violations`, 'warning');
+                }
+
+                if (toolsResult.error) {
+                    throw new Error(toolsResult.error.message || 'Failed to get tools');
+                }
+
+                tools = toolsResult.result?.tools || [];
+                isConnected = true;
+
+                log(`✅ Connected successfully - Found ${tools.length} tools`);
+
+                // Display validation results
+                displayValidationResults(validationResults);
+
+                // Display tools
+                displayTools();
+                updateAuthUI();
+
+                // Hide loading overlay on success
+                hideLoading();
+
+            } catch (error) {
+                hideLoading();
+                log(`❌ HTTP connection failed: ${error.message}`, 'error');
+
+                // Show validation results even on error
+                if (validationResults.length > 0) {
+                    displayValidationResults(validationResults);
+                }
+
+                throw error;
+            }
+        }
+
+        /**
+         * Display protocol validation results
+         */
+        function displayValidationResults(results) {
+            const validationDiv = document.getElementById('validation-results');
+            const sectionDiv = document.getElementById('protocol-validation');
+
+            if (!results || results.length === 0) {
+                sectionDiv.style.display = 'none';
+                return;
+            }
+
+            sectionDiv.style.display = 'block';
+            validationDiv.innerHTML = results.join('');
+        }
+
+        /**
+         * Connect to SSE-based MCP server
+         */
+        function connectSSEServer(server) {
+            // Disconnect existing SSE client if any
+            if (sseClient) {
+                sseClient.disconnect();
+            }
+
+            // Create new SSE client
+            sseClient = new SSEMCPClient(server.url, server.name);
+
+            // Set up event handlers
+            sseClient.onConnected = () => {
+                log(`✅ SSE connection established with ${server.name}`);
+                isConnected = true;
+                updateAuthUI();
+                hideLoading();
+            };
+
+            sseClient.onDisconnected = () => {
+                log(`👋 SSE connection closed with ${server.name}`);
+                isConnected = false;
+                tools = [];
+                updateAuthUI();
+                hideLoading();
+            };
+
+            sseClient.onToolsReceived = (receivedTools) => {
+                tools = receivedTools;
+                log(`🛠️ Received ${tools.length} tools from SSE server`);
+                displayTools();
+            };
+
+            sseClient.onError = (error) => {
+                hideLoading();
+                log(`❌ SSE connection error: ${error}`, 'error');
+                isConnected = false;
+                updateAuthUI();
+            };
+
+            sseClient.onMessage = (message) => {
+                log(`📨 SSE message: ${JSON.stringify(message, null, 2)}`);
+            };
+
+            // Connect to SSE server
+            sseClient.connect();
+        }
+
+        function refreshToken() {
+            log('🔄 Token refresh not implemented yet', 'warning');
+        }
+
+        function logout() {
+            // Disconnect SSE client if active
+            if (sseClient) {
+                sseClient.disconnect();
+                sseClient = null;
+            }
+
+            // Clear OAuth tokens for current server
+            if (currentServer && servers[currentServer]) {
+                const serverUrl = servers[currentServer].url;
+                const oauthClient = oauthClients[serverUrl];
+                if (oauthClient) {
+                    oauthClient.clearTokens();
+                    log('🔐 OAuth tokens cleared');
+                }
+            }
+
+            // Reset state
+            tools = [];
+            isConnected = false;
+
+            updateAuthUI();
+
+            document.getElementById('server-info').style.display = 'none';
+            document.getElementById('tools-section').style.display = 'none';
+
+            log('👋 Disconnected successfully');
+        }
+
+        function resetSession() {
+            // First, logout to disconnect and clear session
+            logout();
+
+            // Clear activity log
+            const logOutput = document.getElementById('log-output');
+            logOutput.textContent = 'Starting MCP Client...';
+
+            // Clear validation results
+            const validationDiv = document.getElementById('validation-results');
+            const validationSection = document.getElementById('protocol-validation');
+            if (validationDiv) validationDiv.innerHTML = '';
+            if (validationSection) validationSection.style.display = 'none';
+
+            // Clear server info
+            const serverDetails = document.getElementById('server-details');
+            if (serverDetails) serverDetails.innerHTML = '';
+
+            // Clear protocol validator log
+            if (mcpValidator) {
+                mcpValidator.clearLog();
+            }
+
+            log('🔄 Session reset complete - all activity logs cleared');
+        }
+
+        /**
+         * Format MCP response for better readability
+         * Parses nested JSON and creates nice displays for data arrays
+         */
+        function formatMCPResponse(mcpResponse) {
+            try {
+                // Extract the content from MCP response
+                const content = mcpResponse.result?.content;
+                if (!content || !Array.isArray(content) || content.length === 0) {
+                    return { dataDisplay: '<p style="margin-top: 10px;">No data returned</p>' };
+                }
+
+                // Get the text content (which might be nested JSON)
+                const textContent = content[0]?.text;
+                if (!textContent) {
+                    return { dataDisplay: '<p style="margin-top: 10px;">No data returned</p>' };
+                }
+
+                // Try to parse nested JSON
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(textContent);
+                } catch (e) {
+                    // Not JSON, just display as text
+                    return {
+                        dataDisplay: `
+                            <div style="margin-top: 10px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                                <strong>Result:</strong>
+                                <pre style="margin-top: 10px; font-size: 13px; white-space: pre-wrap; word-wrap: break-word;">${textContent}</pre>
+                            </div>
+                        `
+                    };
+                }
+
+                // Check if there's a data array
+                if (parsedData.data && Array.isArray(parsedData.data)) {
+                    return { dataDisplay: formatDataArray(parsedData.data, parsedData.status) };
+                }
+
+                // If there's a status and message
+                if (parsedData.status || parsedData.message) {
+                    return {
+                        dataDisplay: `
+                            <div style="margin-top: 10px; padding: 15px; background: #d4edda; border-radius: 6px; border: 1px solid #c3e6cb;">
+                                ${parsedData.status ? `<div><strong>Status:</strong> ${parsedData.status}</div>` : ''}
+                                ${parsedData.message ? `<div style="margin-top: 5px;"><strong>Message:</strong> ${parsedData.message}</div>` : ''}
+                                ${parsedData.id ? `<div style="margin-top: 5px;"><strong>ID:</strong> ${parsedData.id}</div>` : ''}
+                            </div>
+                        `
+                    };
+                }
+
+                // Default: show formatted JSON
+                return {
+                    dataDisplay: `
+                        <div style="margin-top: 10px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                            <strong>Result:</strong>
+                            <pre style="margin-top: 10px; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(parsedData, null, 2)}</pre>
+                        </div>
+                    `
+                };
+
+            } catch (error) {
+                console.error('Error formatting response:', error);
+                return { dataDisplay: '<p style="margin-top: 10px; color: #dc3545;">Error formatting response</p>' };
+            }
+        }
+
+        /**
+         * Format data array as readable cards
+         */
+        function formatDataArray(dataArray, status) {
+            if (dataArray.length === 0) {
+                return `
+                    <div style="margin-top: 10px; padding: 15px; background: #fff3cd; border-radius: 6px; border: 1px solid #ffc107;">
+                        <strong>⚠️ No matches found</strong>
+                    </div>
+                `;
+            }
+
+            const cards = dataArray.map((item, index) => `
+                <div style="
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-left: 4px solid #007bff;
+                    border-radius: 6px;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <span style="
+                            background: #007bff;
+                            color: white;
+                            padding: 4px 10px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            font-weight: bold;
+                        ">Match ${index + 1}</span>
+                        ${item.relevance ? `
+                            <span style="
+                                background: #28a745;
+                                color: white;
+                                padding: 4px 10px;
+                                border-radius: 12px;
+                                font-size: 11px;
+                            ">Relevance: ${item.relevance}</span>
+                        ` : ''}
+                    </div>
+
+                    ${item.theme ? `
+                        <div style="margin-bottom: 8px;">
+                            <strong style="color: #6c757d; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Theme:</strong>
+                            <div style="
+                                color: #007bff;
+                                font-size: 14px;
+                                font-weight: 600;
+                                margin-top: 3px;
+                            ">${escapeHtml(item.theme)}</div>
+                        </div>
+                    ` : ''}
+
+                    ${item.content ? `
+                        <div style="margin-bottom: 8px;">
+                            <strong style="color: #6c757d; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Content:</strong>
+                            <div style="
+                                color: #2d3748;
+                                font-size: 13px;
+                                line-height: 1.6;
+                                margin-top: 3px;
+                                padding: 10px;
+                                background: #f8f9fa;
+                                border-radius: 4px;
+                            ">${escapeHtml(item.content)}</div>
+                        </div>
+                    ` : ''}
+
+                    <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 11px; color: #6c757d;">
+                        ${item.id ? `<span>🆔 ID: ${item.id}</span>` : ''}
+                        ${item.created_at ? `<span>📅 ${new Date(item.created_at).toLocaleString()}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div style="margin-top: 10px;">
+                    <div style="
+                        background: #d4edda;
+                        padding: 10px 15px;
+                        border-radius: 6px;
+                        margin-bottom: 10px;
+                        border: 1px solid #c3e6cb;
+                    ">
+                        <strong>✅ Found ${dataArray.length} match${dataArray.length !== 1 ? 'es' : ''}</strong>
+                    </div>
+                    ${cards}
+                </div>
+            `;
+        }
+
+        /**
+         * Escape HTML to prevent XSS
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function callToolWithInputs(toolName) {
+            console.log('callToolWithInputs called with:', toolName);
+
+            // Get tool definition
+            const tool = tools.find(t => t.name === toolName);
+            if (!tool) {
+                log(`❌ Tool ${toolName} not found`, 'error');
+                return;
+            }
+
+            // Collect input values
+            const args = {};
+            if (tool.inputSchema && tool.inputSchema.properties) {
+                for (const propName of Object.keys(tool.inputSchema.properties)) {
+                    const inputEl = document.getElementById(`${toolName}_${propName}`);
+                    if (inputEl) {
+                        const value = inputEl.value.trim();
+                        if (value) {
+                            args[propName] = value;
+                        }
+                    }
+                }
+            }
+
+            showLoading('Calling Tool', `Executing ${toolName}...`);
+            log(`🛠️ Calling tool: ${toolName} with args: ${JSON.stringify(args)}`);
+
+            try {
+                const server = servers[currentServer];
+
+                // Build JSON-RPC request
+                const requestPayload = {
+                    jsonrpc: '2.0',
+                    id: Date.now(),
+                    method: 'tools/call',
+                    params: {
+                        name: toolName,
+                        arguments: args
+                    }
+                };
+
+                // Call tool directly via JSON-RPC
+                const response = await fetch(server.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                // Handle JSON-RPC response format
+                if (result.error) {
+                    throw new Error(result.error.message || JSON.stringify(result.error));
+                }
+
+                console.log('Tool result:', result.result);
+
+                // Show result in the tool's individual result div with split view
+                const toolResultDiv = document.getElementById(`result-${toolName}`);
+                if (toolResultDiv) {
+                    const splitViewId = `split-view-${Date.now()}`;
+
+                    toolResultDiv.innerHTML = `
+                        <div class="status success" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                            <strong>✅ Success</strong>
+
+                            <!-- Technical Details (Request & Response) -->
+                            <details open style="margin-top: 10px;">
+                                <summary style="cursor: pointer; font-weight: bold; color: #007bff;">🔧 Technical Details (Request & Response)</summary>
+                                <div id="${splitViewId}" style="display: flex; margin-top: 10px; height: 450px;">
+                                    <!-- Request Panel -->
+                                    <div class="split-panel-left" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                        <div style="background: #007bff; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">
+                                            📤 Request
+                                        </div>
+                                        <pre style="
+                                            margin: 0;
+                                            flex: 1;
+                                            font-size: 11px;
+                                            overflow-y: auto;
+                                            background: #f8f9fa;
+                                            padding: 15px;
+                                            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+                                            line-height: 1.5;
+                                            color: #2d3748;
+                                            white-space: pre-wrap;
+                                            word-wrap: break-word;
+                                        ">${prettyPrintJson(requestPayload)}</pre>
+                                    </div>
+
+                                    <!-- Draggable Divider -->
+                                    <div class="split-divider" style="
+                                        width: 5px;
+                                        background: #007bff;
+                                        cursor: col-resize;
+                                        position: relative;
+                                        flex-shrink: 0;
+                                    ">
+                                        <div style="
+                                            position: absolute;
+                                            top: 50%;
+                                            left: 50%;
+                                            transform: translate(-50%, -50%);
+                                            width: 20px;
+                                            height: 40px;
+                                            background: #007bff;
+                                            border-radius: 4px;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: white;
+                                            font-size: 10px;
+                                        ">⋮</div>
+                                    </div>
+
+                                    <!-- Response Panel -->
+                                    <div class="split-panel-right" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                        <div style="background: #28a745; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">
+                                            📥 Response
+                                        </div>
+                                        <pre style="
+                                            margin: 0;
+                                            flex: 1;
+                                            font-size: 11px;
+                                            overflow-y: auto;
+                                            background: #f8f9fa;
+                                            padding: 15px;
+                                            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+                                            line-height: 1.5;
+                                            color: #2d3748;
+                                            white-space: pre-wrap;
+                                            word-wrap: break-word;
+                                        ">${prettyPrintJson(result)}</pre>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    `;
+
+                    // Initialize the resizable splitter
+                    initResizableSplitter(splitViewId);
+                }
+
+                hideLoading();
+                log(`✅ Tool ${toolName} completed successfully`);
+
+            } catch (error) {
+                hideLoading();
+                console.error('Tool call error:', error);
+
+                // Show error in the tool's individual result div
+                const toolResultDiv = document.getElementById(`result-${toolName}`);
+                if (toolResultDiv) {
+                    toolResultDiv.innerHTML = `
+                        <div class="status error" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                            <strong>❌ Error</strong>
+                            <p style="margin: 5px 0; font-size: 12px;">${error.message}</p>
+                        </div>
+                    `;
+                }
+
+                log(`❌ Tool ${toolName} failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Keep the old function for backward compatibility
+        async function callToolFromUI(toolName) {
+            return callToolWithInputs(toolName);
+        }
+
+        function openAuthPopup(authUrl) {
+            const popup = window.open(
+                authUrl,
+                'oauth_popup',
+                'width=600,height=700,scrollbars=yes,resizable=yes'
+            );
+
+            // Listen for popup messages
+            window.addEventListener('message', (event) => {
+                if (event.origin !== window.location.origin) return;
+                
+                if (event.data.type === 'oauth_success') {
+                    popup.close();
+                    handleAuthCallback(event.data.code, event.data.state);
+                } else if (event.data.type === 'oauth_error') {
+                    popup.close();
+                    log(`❌ OAuth error: ${event.data.error}`, 'error');
+                }
+            });
+
+            // Check if popup was closed manually
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    log('⚠️ OAuth popup was closed', 'warning');
+                }
+            }, 1000);
+        }
+
+        async function handleAuthCallback(code, state) {
+            try {
+                showLoading('Processing OAuth', 'Completing authorization flow...');
+                log('🔄 Processing OAuth callback...');
+
+                const server = servers[currentServer];
+
+                const requestData = {
+                    code: code,
+                    state: state,
+                    serverUrl: server.url,
+                    serverName: server.name
+                };
+                console.log('Sending OAuth callback data:', requestData);
+
+                // Send callback to PHP MCP client
+                const response = await fetch('/backend/mcp_client/oauth/callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('OAuth callback error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('=== FULL OAuth callback result ===');
+                console.log(JSON.stringify(result, null, 2));
+                console.log('=== END OAuth callback result ===');
+
+                if (result.success) {
+                    tools = result.tools || [];
+                    isConnected = true;
+                    log('✅ OAuth flow completed successfully!', 'success');
+                    log(`✅ Found ${tools.length} tools`);
+
+                    // Update UI
+                    displayTools();
+                    updateAuthUI();
+                    hideLoading();
+                } else {
+                    throw new Error(result.error || 'OAuth callback failed');
+                }
+
+            } catch (error) {
+                hideLoading();
+                console.error('OAuth callback error details:', error);
+                log(`❌ OAuth callback failed: ${error.message}`, 'error');
+            }
+        }
+
+        function updateAuthUI() {
+            const authStatus = document.getElementById('auth-status');
+            const authBtn = document.getElementById('auth-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (isConnected) {
+                authStatus.className = 'status success';
+                authStatus.innerHTML = `<strong>Status:</strong> ✅ Connected to ${servers[currentServer].name}`;
+                authBtn.disabled = true;
+                refreshBtn.disabled = true;
+                logoutBtn.disabled = false;
+
+                document.getElementById('server-info').style.display = 'block';
+                // protocol-validation is shown/hidden by displayValidationResults
+                document.getElementById('tools-section').style.display = 'block';
+            } else {
+                authStatus.className = 'status info';
+                authStatus.innerHTML = `<strong>Status:</strong> Not connected to ${servers[currentServer].name}`;
+                authBtn.disabled = false;
+                refreshBtn.disabled = true;
+                logoutBtn.disabled = true;
+
+                document.getElementById('server-info').style.display = 'none';
+                document.getElementById('protocol-validation').style.display = 'none';
+                document.getElementById('tools-section').style.display = 'none';
+            }
+        }
+
+        function getToolInputs(tool) {
+            if (!tool.inputSchema || !tool.inputSchema.properties) {
+                return '';
+            }
+            
+            let inputs = '';
+            for (const [propName, propDef] of Object.entries(tool.inputSchema.properties)) {
+                const required = tool.inputSchema.required && tool.inputSchema.required.includes(propName);
+                const placeholder = propDef.description || propName;
+                
+                inputs += `
+                    <div style="margin: 5px 0;">
+                        <label style="font-size: 12px; color: #666;">
+                            ${propName}${required ? ' *' : ''}:
+                        </label>
+                        <input type="text" 
+                               id="${tool.name}_${propName}" 
+                               placeholder="${placeholder}"
+                               style="width: 100%; padding: 4px; margin-top: 2px; border: 1px solid #ddd; border-radius: 3px;"
+                               ${required ? 'required' : ''}>
+                    </div>
+                `;
+            }
+            return inputs;
+        }
+
+        function displayTools() {
+            const toolsList = document.getElementById('tools-list');
+            
+            if (tools.length === 0) {
+                toolsList.innerHTML = '<p>No tools available</p>';
+                return;
+            }
+
+            toolsList.innerHTML = tools.map(tool => `
+                <div class="tool-card">
+                    <div class="tool-name">${tool.name}</div>
+                    <div class="tool-desc">${tool.description || 'No description'}</div>
+                    ${getToolInputs(tool)}
+                    <button onclick="callToolWithInputs('${tool.name}')">Call Tool</button>
+                    <div id="result-${tool.name}" style="margin-top: 10px;"></div>
+                </div>
+            `).join('');
+        }
+
+        // Test if formatting works at all
+        function formatJSON(obj) {
+            // Simple test - just make first line red
+            const jsonString = JSON.stringify(obj, null, 2);
+            const lines = jsonString.split('\n');
+            
+            // Make the first non-empty line red as a test
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    lines[i] = `<span style="color: red; font-weight: bold;">${lines[i]}</span>`;
+                    break;
+                }
+            }
+            
+            return lines.join('\n');
+        }
+
+        /**
+         * Pretty print JSON with smart unescaping of nested JSON strings
+         * Detects escaped JSON in string values and formats them properly
+         */
+        function prettyPrintJson(data) {
+            // First pass: unescape nested JSON strings in the data structure
+            const unescapedData = deepUnescapeJSON(data);
+
+            // Second pass: stringify with custom formatting
+            return JSON.stringify(unescapedData, null, 2);
+        }
+
+        /**
+         * Recursively traverse object/array and unescape JSON strings
+         */
+        function deepUnescapeJSON(obj) {
+            if (obj === null || obj === undefined) {
+                return obj;
+            }
+
+            // Handle arrays
+            if (Array.isArray(obj)) {
+                return obj.map(item => deepUnescapeJSON(item));
+            }
+
+            // Handle objects
+            if (typeof obj === 'object') {
+                const result = {};
+                for (const [key, value] of Object.entries(obj)) {
+                    result[key] = deepUnescapeJSON(value);
+                }
+                return result;
+            }
+
+            // Handle strings - check if they contain escaped JSON
+            if (typeof obj === 'string') {
+                // Try to detect and parse escaped JSON
+                if (looksLikeJSON(obj)) {
+                    try {
+                        const parsed = JSON.parse(obj);
+                        // Recursively unescape nested structures
+                        return deepUnescapeJSON(parsed);
+                    } catch (e) {
+                        // Not valid JSON, return as-is
+                        return obj;
+                    }
+                }
+                return obj;
+            }
+
+            // Return primitive values as-is
+            return obj;
+        }
+
+        /**
+         * Quick heuristic to check if a string looks like JSON
+         * Avoids parsing every single string
+         */
+        function looksLikeJSON(str) {
+            if (typeof str !== 'string' || str.length < 2) {
+                return false;
+            }
+
+            const trimmed = str.trim();
+
+            // Check if it starts and ends with JSON delimiters
+            return (trimmed[0] === '{' && trimmed[trimmed.length - 1] === '}') ||
+                   (trimmed[0] === '[' && trimmed[trimmed.length - 1] === ']');
+        }
+
+        /**
+         * Initialize resizable splitter for Request/Response panels
+         */
+        function initResizableSplitter(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const leftPanel = container.querySelector('.split-panel-left');
+            const rightPanel = container.querySelector('.split-panel-right');
+            const divider = container.querySelector('.split-divider');
+
+            if (!leftPanel || !rightPanel || !divider) return;
+
+            let isResizing = false;
+            let startX = 0;
+            let startLeftFlex = 1;
+            let startRightFlex = 1;
+
+            divider.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+
+                // Get current flex values
+                const leftStyle = window.getComputedStyle(leftPanel);
+                const rightStyle = window.getComputedStyle(rightPanel);
+                startLeftFlex = parseFloat(leftPanel.style.flex) || 1;
+                startRightFlex = parseFloat(rightPanel.style.flex) || 1;
+
+                // Prevent text selection during drag
+                e.preventDefault();
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+
+                const containerRect = container.getBoundingClientRect();
+                const containerWidth = containerRect.width;
+                const mouseX = e.clientX - containerRect.left;
+
+                // Calculate new flex ratios
+                // Subtract divider width (5px)
+                const availableWidth = containerWidth - 5;
+                const leftWidth = mouseX;
+                const rightWidth = containerWidth - mouseX - 5;
+
+                // Ensure minimum widths (100px each)
+                if (leftWidth < 100 || rightWidth < 100) return;
+
+                // Calculate flex ratios
+                const totalWidth = leftWidth + rightWidth;
+                const leftFlex = leftWidth / totalWidth;
+                const rightFlex = rightWidth / totalWidth;
+
+                leftPanel.style.flex = leftFlex.toString();
+                rightPanel.style.flex = rightFlex.toString();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+
+            // Handle mouse leaving the window
+            document.addEventListener('mouseleave', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+
+        // Loading overlay functions
+        function showLoading(text = 'Processing', subtext = 'Please wait...') {
+            const overlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const loadingSubtext = document.getElementById('loading-subtext');
+
+            loadingText.innerHTML = text + '<span class="loading-dots"></span>';
+            loadingSubtext.textContent = subtext;
+            overlay.classList.add('active');
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.remove('active');
+        }
+
+        // Logging utility
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const emoji = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+
+            logOutput.textContent += `\n${timestamp} ${emoji} ${message}`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+
+            console.log(`[MCP] ${message}`);
+        }
+    </script>
+</body>
+</html>

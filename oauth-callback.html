@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Callback - MCPeek</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            color: #666;
+            margin-top: 20px;
+        }
+        .error {
+            color: #d32f2f;
+            margin-top: 20px;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 5px;
+        }
+        .success {
+            color: #388e3c;
+            margin-top: 20px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 OAuth Authorization</h1>
+        <div id="status">
+            <div class="spinner"></div>
+            <div class="message">Processing authorization...</div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state');
+        const error = params.get('error');
+        const errorDescription = params.get('error_description');
+
+        const statusDiv = document.getElementById('status');
+
+        if (error) {
+            // Authorization failed
+            statusDiv.innerHTML = `
+                <div class="error">
+                    <strong>❌ Authorization Failed</strong>
+                    <p>${error}: ${errorDescription || 'Unknown error'}</p>
+                </div>
+            `;
+
+            // Send error to parent window
+            if (window.opener) {
+                window.opener.postMessage({
+                    error: error,
+                    error_description: errorDescription
+                }, window.location.origin);
+            }
+
+            // Close window after 3 seconds
+            setTimeout(() => window.close(), 3000);
+
+        } else if (code && state) {
+            // Authorization successful
+            statusDiv.innerHTML = `
+                <div class="success">
+                    <strong>✅ Authorization Successful</strong>
+                    <p>Completing authentication...</p>
+                </div>
+            `;
+
+            // Send authorization code to parent window
+            if (window.opener) {
+                window.opener.postMessage({
+                    code: code,
+                    state: state
+                }, window.location.origin);
+            }
+
+            // Close window after 1 second
+            setTimeout(() => window.close(), 1000);
+
+        } else {
+            // Missing parameters
+            statusDiv.innerHTML = `
+                <div class="error">
+                    <strong>❌ Invalid Callback</strong>
+                    <p>Missing required parameters</p>
+                </div>
+            `;
+
+            // Close window after 3 seconds
+            setTimeout(() => window.close(), 3000);
+        }
+    </script>
+</body>
+</html>
