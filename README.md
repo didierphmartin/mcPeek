@@ -8,6 +8,10 @@ A browser-based JavaScript tool for testing and debugging MCP (Model Context Pro
 
 > "One peek is worth a thousand errors"
 
+![MCPeek Interface](screen.png)
+
+*MCPeek's intuitive interface showing server management, protocol validation, available tools, and real-time activity logging*
+
 ## 👥 Project Team
 
 - **Didier PH Martin** - Project Lead, Vision, Testing & Validation
@@ -16,6 +20,13 @@ A browser-based JavaScript tool for testing and debugging MCP (Model Context Pro
 *MCPeek was born from a real-world debugging challenge. When traditional MCP testing tools failed to catch subtle protocol violations, we collaborated to build something better.*
 
 ## Features
+
+### 🎨 Modern User Interface
+- **Custom Server Management**: Add, edit, and remove multiple MCP servers with a clean interface
+- **Collapsible Sections**: Organized UI with expandable sections for Server & Authentication, Server Information, Protocol Validation, Available Tools, and Activity Log
+- **Visual Status Indicators**: Real-time connection status with color-coded success/error messages
+- **Activity Log**: Timestamped log showing detailed connection steps and server interactions
+- **Token Management**: Built-in OAuth token refresh controls for authenticated connections
 
 ### ✅ Full MCP Protocol Support
 - **Complete handshake implementation**:
@@ -26,7 +37,7 @@ A browser-based JavaScript tool for testing and debugging MCP (Model Context Pro
 - **JSON-RPC 2.0 compliance**: All messages follow JSON-RPC 2.0 specification
 
 ### 🔍 Protocol Validation & Debugging
-- **Real-time validation** of server responses
+- **Real-time validation** of server responses with visual indicators
 - **Detailed error messages** explaining exactly what's wrong
 - **Protocol compliance checker** that validates:
   - `capabilities.tools` is an object `{}`, not array `[]`
@@ -34,6 +45,12 @@ A browser-based JavaScript tool for testing and debugging MCP (Model Context Pro
   - JSON-RPC 2.0 message format
   - Required fields presence
   - Correct data types
+
+### 🛠️ Interactive Tool Testing
+- **Tool Cards**: Each available tool displayed with name, description, and parameters
+- **Parameter Details**: Shows all input parameters with types and descriptions
+- **One-Click Testing**: "Call Tool" buttons for immediate tool execution
+- **Parameter Forms**: Dynamic forms generated from tool schemas
 
 ### 🎯 What Makes This Different
 
@@ -118,22 +135,34 @@ My current code:
 ## Usage
 
 ### 1. Access the Client
+Open the application in your browser:
 ```bash
-# Make sure XAMPP is running
-open http://localhost/quantis/backend/mcp_client2/
+# Make sure your web server is running
+open http://localhost/mcPeek/
 ```
 
 ### 2. Add Your MCP Server
-- Click "➕ Add Custom Server"
-- Enter server name: `Memo Server`
-- Enter URL: `http://localhost/memo/mcp.php`
-- Click "Add Server"
+1. Expand the **🔒 Server & Authentication** section
+2. Click **➕ Add Custom MCP Server**
+3. Fill in the form:
+   - **Server Name**: e.g., `Memo Server`
+   - **Server URL**: e.g., `http://localhost/memo/mcp.php`
+   - **Description** (optional): Brief description of the server
+4. Click **Add Server**
+5. Your server appears in the "Custom Servers" list with **Edit** and **Remove** buttons
 
-### 3. Connect & Debug
-- Select your server from the dropdown
-- Click "Connect"
-- View protocol validation results
-- Test tools with the UI
+### 3. Connect & Test
+1. Select your server from the **Select MCP Server** dropdown
+2. Click **Connect** - watch the Activity Log for connection progress
+3. View protocol validation results in the **🔍 Protocol Validation** section
+4. Browse available tools in the **🔧 Available Tools** section
+5. Click **Call Tool** on any tool to test it with parameters
+
+### 4. Manage Connections
+- **Refresh Token**: Refresh OAuth tokens for authenticated servers
+- **Disconnect**: Close the current connection
+- **Reset**: Clear all data and start fresh
+- **Edit/Remove**: Manage your custom server list
 
 ## Protocol Validation Panel
 
@@ -333,6 +362,22 @@ Special thanks to the MCP community and the developers working on making the pro
 ---
 
 **Protocol Version:** 2024-11-05 (with June 2025 OAuth updates)
-**Client Version:** 2.0.0
+**Client Version:** 2.1.0
 **OAuth Version:** OAuth 2.1
-**Last Updated:** 2025-01-05
+**Last Updated:** 2025-12-10
+
+## Recent Updates (v2.1.0)
+
+### UI/UX Improvements
+- ✨ Enhanced server management with Edit/Remove functionality
+- 📊 Collapsible sections for better organization
+- 🎨 Visual status indicators and color-coded messages
+- 📝 Real-time activity log with timestamps
+- 🔄 Token refresh controls in the main interface
+- 🎯 Interactive tool cards with detailed parameter display
+
+### User Experience
+- Improved navigation with expandable sections
+- Better visual feedback for connection status
+- Streamlined server configuration workflow
+- Enhanced debugging with detailed activity logging
