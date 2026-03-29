@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCPeek - Peek into MCP Protocol Compliance</title>
+    <link rel="icon" type="image/svg+xml" href="mcpeek-icon.svg">
     <style>
         * {
             box-sizing: border-box;
@@ -228,46 +229,73 @@
     <!-- Load OAuth Client -->
     <script src="MCPOAuthClient.js"></script>
     <div class="container">
-        <h1>🔍 MCPeek</h1>
-        <p style="font-size: 18px; color: #666; margin: -10px 0 20px 0;">Peek into MCP Protocol Compliance</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1>🔍 MCPeek</h1>
+                <p style="font-size: 18px; color: #666; margin: -10px 0 20px 0;">Peek into MCP Protocol Compliance</p>
+            </div>
+            <a href="help.html" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #6366F1; color: white; text-decoration: none; padding: 10px 18px; border-radius: 5px; font-weight: bold; margin-top: 10px; transition: background 0.2s;">
+                <span style="font-size: 16px;">?</span> Help
+            </a>
+        </div>
         <p>A browser-based tool for testing and debugging MCP (Model Context Protocol) servers with full protocol validation.</p>
         
         <div class="auth-section">
             <h2>🔐 Server & Authentication</h2>
 
             <!-- Add Custom Server Section -->
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #ddd;">
-                <h3 style="margin-top: 0; font-size: 16px; color: #007bff;">➕ Add Custom MCP Server</h3>
-                <div style="display: grid; gap: 10px;">
-                    <div>
-                        <label for="custom-server-name" style="font-weight: bold; display: block; margin-bottom: 5px;">Server Name:</label>
-                        <input type="text"
-                               id="custom-server-name"
-                               placeholder="e.g., My Custom Server"
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <details style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #ddd;">
+                <summary style="font-size: 16px; font-weight: bold; color: #007bff; cursor: pointer; user-select: none;">
+                    ➕ Add Custom MCP Server
+                </summary>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                    <!-- Left Column: Server Details -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <label for="custom-server-name" style="font-weight: bold; display: block; margin-bottom: 5px;">Server Name:</label>
+                            <input type="text"
+                                   id="custom-server-name"
+                                   placeholder="e.g., My Custom Server"
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label for="custom-server-url" style="font-weight: bold; display: block; margin-bottom: 5px;">Server URL:</label>
+                            <input type="url"
+                                   id="custom-server-url"
+                                   placeholder="e.g., https://example.com/mcp"
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label for="custom-server-desc" style="font-weight: bold; display: block; margin-bottom: 5px;">Description (optional):</label>
+                            <input type="text"
+                                   id="custom-server-desc"
+                                   placeholder="Brief description of the server"
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        </div>
                     </div>
-                    <div>
-                        <label for="custom-server-url" style="font-weight: bold; display: block; margin-bottom: 5px;">Server URL:</label>
-                        <input type="url"
-                               id="custom-server-url"
-                               placeholder="e.g., https://example.com/mcp or http://localhost:3000/sse"
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <!-- Right Column: Custom Headers -->
+                    <div style="display: flex; flex-direction: column;">
+                        <label for="custom-server-headers" style="font-weight: bold; display: block; margin-bottom: 5px;">Custom Headers (optional):</label>
+                        <textarea id="custom-server-headers"
+                                  placeholder='{"X-API-Key": "your-api-key", "Authorization": "Bearer token"}'
+                                  style="flex: 1; min-height: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; box-sizing: border-box; resize: vertical;"></textarea>
+                        <small style="color: #666; font-size: 11px; margin-top: 5px;">Enter headers as JSON object. These will be sent with every request to authenticate or customize requests.</small>
                     </div>
-                    <div>
-                        <label for="custom-server-desc" style="font-weight: bold; display: block; margin-bottom: 5px;">Description (optional):</label>
-                        <input type="text"
-                               id="custom-server-desc"
-                               placeholder="Brief description of the server"
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
+                </div>
+                <div style="margin-top: 15px;">
                     <button onclick="addCustomServer()" style="background: #28a745;">
                         ➕ Add Server
                     </button>
                 </div>
+            </details>
 
-                <!-- Custom Servers List -->
+            <!-- List MCP Servers Section -->
+            <details style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #ddd;">
+                <summary style="font-size: 16px; font-weight: bold; color: #007bff; cursor: pointer; user-select: none;">
+                    📋 List MCP Servers
+                </summary>
                 <div id="custom-servers-list" style="margin-top: 15px;"></div>
-            </div>
+            </details>
 
             <div style="margin-bottom: 15px;">
                 <label for="server-select" style="font-weight: bold;">Select MCP Server:</label>
@@ -284,7 +312,7 @@
             <button id="logout-btn" onclick="logout()" disabled>Disconnect</button>
             <button id="reset-btn" onclick="resetSession()" style="background: #dc3545;">Reset</button>
         </div>
-        
+
         <div id="server-info" style="display: none;">
             <h2>📡 Server Information</h2>
             <div id="server-details"></div>
@@ -300,6 +328,22 @@
             <div id="tools-list" class="tools-list"></div>
         </div>
 
+        <div id="resources-section" style="display: none;">
+            <h2>📁 Available Resources</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                Resources are data sources exposed by the MCP server (files, databases, APIs, etc.)
+            </p>
+            <div id="resources-list" class="tools-list"></div>
+        </div>
+
+        <div id="prompts-section" style="display: none;">
+            <h2>💬 Available Prompts</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                Prompts are reusable templates that can be customized with arguments
+            </p>
+            <div id="prompts-list" class="tools-list"></div>
+        </div>
+
         <div id="logs">
             <h2>📋 Activity Log</h2>
             <pre id="log-output">Starting MCP Client...</pre>
@@ -310,6 +354,10 @@
         // Simple MCP client state
         let currentServer = null;
         let tools = [];
+        let resources = [];  // MCP resources
+        let prompts = [];    // MCP prompts
+        let serverCapabilities = {}; // Server capabilities from initialize response
+        let currentServerInfo = null; // Server info from initialize response
         let isConnected = false;
         let sseClient = null; // SSE MCP client instance
         let mcpValidator = new MCPProtocolValidator(); // Protocol validator
@@ -345,9 +393,11 @@
                     displayCustomServersList();
                 } else {
                     log(`ℹ️ No custom servers found. Add a server to get started.`);
+                    displayCustomServersList();
                 }
             } catch (error) {
                 log(`⚠️ Failed to load custom servers: ${error.message}`, 'warning');
+                displayCustomServersList();
             }
         }
 
@@ -371,10 +421,12 @@
             const nameInput = document.getElementById('custom-server-name');
             const urlInput = document.getElementById('custom-server-url');
             const descInput = document.getElementById('custom-server-desc');
+            const headersInput = document.getElementById('custom-server-headers');
 
             const name = nameInput.value.trim();
             const url = urlInput.value.trim();
             const description = descInput.value.trim();
+            const headersText = headersInput.value.trim();
 
             // Validate inputs
             if (!name) {
@@ -398,6 +450,21 @@
                 return;
             }
 
+            // Parse and validate custom headers if provided
+            let customHeaders = {};
+            if (headersText) {
+                try {
+                    customHeaders = JSON.parse(headersText);
+                    if (typeof customHeaders !== 'object' || Array.isArray(customHeaders)) {
+                        throw new Error('Headers must be a JSON object');
+                    }
+                } catch (error) {
+                    log(`⚠️ Invalid headers format: ${error.message}. Please enter valid JSON object.`, 'warning');
+                    headersInput.focus();
+                    return;
+                }
+            }
+
             // Generate a unique key for the server
             const serverKey = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
 
@@ -406,7 +473,8 @@
                 name: name,
                 url: url,
                 description: description || `Custom MCP server: ${name}`,
-                custom: true
+                custom: true,
+                customHeaders: customHeaders
             };
 
             // Save to localStorage
@@ -420,8 +488,13 @@
             nameInput.value = '';
             urlInput.value = '';
             descInput.value = '';
+            headersInput.value = '';
 
-            log(`✅ Added custom server: ${name} (${url})`);
+            const headerCount = Object.keys(customHeaders).length;
+            if (headerCount > 0) {
+                console.log('💾 Stored custom headers for server:', JSON.stringify(customHeaders, null, 2));
+            }
+            log(`✅ Added custom server: ${name} (${url})${headerCount > 0 ? ` with ${headerCount} custom header(s)` : ''}`);
 
             // Auto-select the new server
             document.getElementById('server-select').value = serverKey;
@@ -501,19 +574,21 @@
             const customServers = Object.entries(servers).filter(([key, server]) => server.custom);
 
             if (customServers.length === 0) {
-                listDiv.innerHTML = '';
+                listDiv.innerHTML = '<p style="color: #666; font-style: italic;">No custom servers added yet. Add a server above.</p>';
                 return;
             }
 
             listDiv.innerHTML = `
-                <h4 style="font-size: 14px; margin-bottom: 10px; color: #555;">Custom Servers:</h4>
                 <div style="display: grid; gap: 8px;">
-                    ${customServers.map(([key, server]) => `
+                    ${customServers.map(([key, server]) => {
+                        const headerCount = server.customHeaders ? Object.keys(server.customHeaders).length : 0;
+                        return `
                         <div id="server-card-${key}" style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
                             <div style="flex: 1;">
                                 <div id="server-name-${key}" style="font-weight: bold; color: #007bff;">${server.name}</div>
                                 <div id="server-url-${key}" style="font-size: 12px; color: #666; word-break: break-all;">${server.url}</div>
                                 <div id="server-desc-${key}" style="font-size: 11px; color: #999; margin-top: 2px;">${server.description || ''}</div>
+                                ${headerCount > 0 ? `<div style="font-size: 11px; color: #28a745; margin-top: 2px;">🔑 ${headerCount} custom header(s)</div>` : ''}
                             </div>
                             <div style="display: flex; gap: 5px; margin-left: 10px;">
                                 <button onclick="editCustomServer('${key}')"
@@ -525,8 +600,8 @@
                                     🗑️ Remove
                                 </button>
                             </div>
-                        </div>
-                    `).join('')}
+                        </div>`;
+                    }).join('')}
                 </div>
             `;
         }
@@ -542,29 +617,39 @@
             const server = servers[serverKey];
             const cardDiv = document.getElementById(`server-card-${serverKey}`);
 
-            // Replace the card content with editable inputs
+            // Replace the card content with editable inputs (two-column layout)
             cardDiv.innerHTML = `
-                <div style="flex: 1;">
-                    <div style="margin-bottom: 8px;">
-                        <label style="font-weight: bold; font-size: 11px; color: #555;">Server Name:</label>
-                        <input type="text"
-                               id="edit-name-${serverKey}"
-                               value="${server.name}"
-                               style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px;">
+                <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <!-- Left Column: Server Details -->
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div>
+                            <label style="font-weight: bold; font-size: 11px; color: #555;">Server Name:</label>
+                            <input type="text"
+                                   id="edit-name-${serverKey}"
+                                   value="${server.name}"
+                                   style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="font-weight: bold; font-size: 11px; color: #555;">Server URL:</label>
+                            <input type="url"
+                                   id="edit-url-${serverKey}"
+                                   value="${server.url}"
+                                   style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="font-weight: bold; font-size: 11px; color: #555;">Description:</label>
+                            <input type="text"
+                                   id="edit-desc-${serverKey}"
+                                   value="${server.description || ''}"
+                                   style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px; box-sizing: border-box;">
+                        </div>
                     </div>
-                    <div style="margin-bottom: 8px;">
-                        <label style="font-weight: bold; font-size: 11px; color: #555;">Server URL:</label>
-                        <input type="url"
-                               id="edit-url-${serverKey}"
-                               value="${server.url}"
-                               style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px;">
-                    </div>
-                    <div>
-                        <label style="font-weight: bold; font-size: 11px; color: #555;">Description:</label>
-                        <input type="text"
-                               id="edit-desc-${serverKey}"
-                               value="${server.description || ''}"
-                               style="width: 100%; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 12px;">
+                    <!-- Right Column: Custom Headers -->
+                    <div style="display: flex; flex-direction: column;">
+                        <label style="font-weight: bold; font-size: 11px; color: #555;">Custom Headers (JSON):</label>
+                        <textarea id="edit-headers-${serverKey}"
+                                  placeholder='{"X-API-Key": "your-key"}'
+                                  style="flex: 1; min-height: 70px; padding: 6px; border: 1px solid #007bff; border-radius: 3px; font-size: 11px; font-family: monospace; box-sizing: border-box; resize: vertical;">${server.customHeaders ? JSON.stringify(server.customHeaders, null, 2) : ''}</textarea>
                     </div>
                 </div>
                 <div style="display: flex; gap: 5px; margin-left: 10px; align-items: flex-start;">
@@ -593,10 +678,12 @@
             const nameInput = document.getElementById(`edit-name-${serverKey}`);
             const urlInput = document.getElementById(`edit-url-${serverKey}`);
             const descInput = document.getElementById(`edit-desc-${serverKey}`);
+            const headersInput = document.getElementById(`edit-headers-${serverKey}`);
 
             const newName = nameInput.value.trim();
             const newUrl = urlInput.value.trim();
             const newDesc = descInput.value.trim();
+            const headersText = headersInput.value.trim();
 
             // Validate inputs
             if (!newName) {
@@ -620,13 +707,30 @@
                 return;
             }
 
+            // Parse and validate custom headers if provided
+            let newHeaders = {};
+            if (headersText) {
+                try {
+                    newHeaders = JSON.parse(headersText);
+                    if (typeof newHeaders !== 'object' || Array.isArray(newHeaders)) {
+                        throw new Error('Headers must be a JSON object');
+                    }
+                } catch (error) {
+                    log(`⚠️ Invalid headers format: ${error.message}. Please enter valid JSON object.`, 'warning');
+                    headersInput.focus();
+                    return;
+                }
+            }
+
             const oldName = servers[serverKey].name;
             const oldUrl = servers[serverKey].url;
+            const oldHeaders = servers[serverKey].customHeaders || {};
 
             // Update server object
             servers[serverKey].name = newName;
             servers[serverKey].url = newUrl;
             servers[serverKey].description = newDesc;
+            servers[serverKey].customHeaders = newHeaders;
 
             // Save to localStorage
             saveCustomServers();
@@ -635,11 +739,12 @@
             updateServerDropdown();
             displayCustomServersList();
 
-            log(`✅ Updated server: ${newName}${oldUrl !== newUrl ? ` (URL changed from ${oldUrl} to ${newUrl})` : ''}`);
+            const headersChanged = JSON.stringify(oldHeaders) !== JSON.stringify(newHeaders);
+            log(`✅ Updated server: ${newName}${oldUrl !== newUrl ? ` (URL changed)` : ''}${headersChanged ? ' (headers updated)' : ''}`);
 
             // If this is the currently selected server and connected, warn about reconnecting
-            if (currentServer === serverKey && isConnected && oldUrl !== newUrl) {
-                log('⚠️ URL was changed. Please disconnect and reconnect to use the new URL.', 'warning');
+            if (currentServer === serverKey && isConnected && (oldUrl !== newUrl || headersChanged)) {
+                log('⚠️ Server configuration changed. Please disconnect and reconnect to apply changes.', 'warning');
             }
         }
 
@@ -786,6 +891,182 @@
         }
 
         /**
+         * Continue connection after successful initialize (helper for endpoint discovery)
+         */
+        async function continueConnection(server, initResult, validationResults, accessToken) {
+            // Get custom headers for this server
+            const customHeaders = getCustomHeaders(server);
+
+            // Validate initialize response
+            const initValidation = mcpValidator.validateInitializeResponse(initResult);
+            mcpValidator.logValidation('Initialize Response', initValidation);
+            validationResults.push(mcpValidator.generateValidationReport(initValidation, 'Initialize Response'));
+
+            if (!initValidation.valid) {
+                log(`⚠️ Initialize response has protocol violations`, 'warning');
+            }
+
+            log(`✅ Server: ${initResult.result?.serverInfo?.name || 'Unknown'} v${initResult.result?.serverInfo?.version || '?'}`);
+
+            // Store server info and capabilities for later use
+            currentServerInfo = initResult.result?.serverInfo || null;
+            serverCapabilities = initResult.result?.capabilities || {};
+            log(`📋 Server capabilities: ${Object.keys(serverCapabilities).join(', ') || 'none'}`);
+
+            // Step 2: Send notifications/initialized
+            log(`🔔 Step 2: Sending notifications/initialized...`);
+            await sendNotification(server.url, 'notifications/initialized', {}, accessToken, customHeaders);
+            log(`✅ Notification sent (MCP handshake complete)`);
+
+            // Step 3: Request tools list
+            log(`🛠️ Step 3: Requesting tools from ${server.name}...`);
+            const toolsResult = await fetchMCPMethod(server.url, 'tools/list', {}, accessToken, customHeaders);
+
+            // Validate tools/list response
+            const toolsValidation = mcpValidator.validateToolsListResponse(toolsResult);
+            mcpValidator.logValidation('Tools List Response', toolsValidation);
+            validationResults.push(mcpValidator.generateValidationReport(toolsValidation, 'Tools List Response'));
+
+            if (toolsResult.error) {
+                throw new Error(toolsResult.error.message || 'Failed to get tools');
+            }
+
+            tools = toolsResult.result?.tools || [];
+            isConnected = true;
+
+            log(`✅ Connected successfully - Found ${tools.length} tools`);
+
+            // Check for MCP Apps/UI tools
+            const uiTools = tools.filter(t => t._meta?.ui?.resourceUri);
+            if (uiTools.length > 0) {
+                log(`🖼️ Found ${uiTools.length} MCP App tools with UI components`);
+            }
+
+            // Step 4: Request resources list (if server supports it)
+            if (serverCapabilities.resources) {
+                log(`📁 Step 4: Requesting resources from ${server.name}...`);
+                try {
+                    const resourcesResult = await fetchMCPMethod(server.url, 'resources/list', {}, accessToken, customHeaders);
+                    const resourcesValidation = mcpValidator.validateResourcesListResponse(resourcesResult);
+                    mcpValidator.logValidation('Resources List Response', resourcesValidation);
+                    validationResults.push(mcpValidator.generateValidationReport(resourcesValidation, 'Resources List Response'));
+
+                    if (resourcesResult.result?.resources) {
+                        resources = resourcesResult.result.resources;
+                        log(`✅ Found ${resources.length} resources`);
+
+                        // Check for UI resources
+                        const uiResources = resources.filter(r =>
+                            r.uri?.startsWith('ui://') ||
+                            r.mimeType?.includes('mcp-app') ||
+                            r.mimeType?.includes('text/html')
+                        );
+                        if (uiResources.length > 0) {
+                            log(`🖼️ Found ${uiResources.length} UI resources`);
+                        }
+                    }
+                } catch (error) {
+                    log(`⚠️ Could not fetch resources: ${error.message}`, 'warning');
+                }
+            } else {
+                resources = [];
+            }
+
+            // Step 5: Request prompts list (if server supports it)
+            if (serverCapabilities.prompts) {
+                log(`💬 Step 5: Requesting prompts from ${server.name}...`);
+                try {
+                    const promptsResult = await fetchMCPMethod(server.url, 'prompts/list', {}, accessToken, customHeaders);
+                    const promptsValidation = mcpValidator.validatePromptsListResponse(promptsResult);
+                    mcpValidator.logValidation('Prompts List Response', promptsValidation);
+                    validationResults.push(mcpValidator.generateValidationReport(promptsValidation, 'Prompts List Response'));
+
+                    if (promptsResult.result?.prompts) {
+                        prompts = promptsResult.result.prompts;
+                        log(`✅ Found ${prompts.length} prompts`);
+                    }
+                } catch (error) {
+                    log(`⚠️ Could not fetch prompts: ${error.message}`, 'warning');
+                }
+            } else {
+                prompts = [];
+            }
+
+            // Display everything
+            displayValidationResults(validationResults);
+            displayTools();
+            displayResources();
+            displayPrompts();
+            updateAuthUI();
+            hideLoading();
+        }
+
+        /**
+         * Send MCP notification (no response expected)
+         */
+        /**
+         * Get custom headers for a server
+         * @param {Object} server - Server object (may have customHeaders property)
+         * @returns {Object} - Custom headers object or empty object
+         */
+        function getCustomHeaders(server) {
+            if (!server || !server.customHeaders) {
+                return {};
+            }
+            return server.customHeaders;
+        }
+
+        /**
+         * Apply custom headers to a headers object
+         * Custom headers override default headers except for Content-Type
+         * @param {Object} headers - Base headers object
+         * @param {Object} customHeaders - Custom headers to apply
+         * @returns {Object} - Headers with custom headers applied
+         */
+        function applyCustomHeaders(headers, customHeaders) {
+            if (!customHeaders || typeof customHeaders !== 'object') {
+                return headers;
+            }
+            // Apply custom headers (they override defaults except Content-Type)
+            for (const [key, value] of Object.entries(customHeaders)) {
+                if (key.toLowerCase() !== 'content-type') {
+                    headers[key] = value;
+                }
+            }
+            return headers;
+        }
+
+        /**
+         * Send MCP notification (no response expected)
+         */
+        async function sendNotification(serverUrl, method, params = {}, accessToken = null, customHeaders = {}) {
+            const notification = {
+                jsonrpc: '2.0',
+                method: method,
+                params: params
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json, text/event-stream, */*',
+                'mcp-protocol-version': '2024-11-05'
+            };
+
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+
+            // Apply custom headers
+            applyCustomHeaders(headers, customHeaders);
+
+            await fetch(serverUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(notification)
+            });
+        }
+
+        /**
          * Connect to HTTP-based MCP server directly using JSON-RPC
          * Implements full MCP protocol with validation and OAuth support
          */
@@ -814,9 +1095,10 @@
                 };
 
                 // Build headers
+                // Include multiple Accept types for compatibility with different MCP transports
                 const headers = {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': 'application/json, text/event-stream, */*',
                     'mcp-protocol-version': '2024-11-05'  // MCP protocol header
                 };
 
@@ -825,6 +1107,14 @@
                 if (accessToken) {
                     headers['Authorization'] = `Bearer ${accessToken}`;
                     log(`🔐 Using OAuth access token`);
+                }
+
+                // Apply custom headers from server configuration
+                const customHeaders = getCustomHeaders(server);
+                applyCustomHeaders(headers, customHeaders);
+                if (Object.keys(customHeaders).length > 0) {
+                    log(`📡 POST ${server.url} [initialize]`);
+                    log(`   Headers: ${JSON.stringify(headers)}`);
                 }
 
                 const initResponse = await fetch(server.url, {
@@ -864,7 +1154,87 @@
                     throw new Error(`HTTP ${initResponse.status}: ${initResponse.statusText}`);
                 }
 
-                const initResult = await initResponse.json();
+                // Check Content-Type before parsing
+                const contentType = initResponse.headers.get('Content-Type') || '';
+                const responseText = await initResponse.text();
+
+                // Detect HTML response (not a JSON-RPC endpoint)
+                if (contentType.includes('text/html') || responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                    log(`⚠️ Server returned HTML instead of JSON-RPC`, 'warning');
+                    log(`   This URL appears to serve a web page, not an MCP endpoint`, 'warning');
+
+                    // Try common MCP endpoint sub-paths
+                    const alternateEndpoints = ['/mcp', '/api/mcp', '/rpc', '/jsonrpc', '/api'];
+                    log(`🔍 Trying alternate MCP endpoints...`);
+
+                    for (const suffix of alternateEndpoints) {
+                        const altUrl = server.url.replace(/\/$/, '') + suffix;
+                        log(`   Trying: ${altUrl}`);
+
+                        try {
+                            const altResponse = await fetch(altUrl, {
+                                method: 'POST',
+                                headers: headers,
+                                body: JSON.stringify(initRequest)
+                            });
+
+                            const altContentType = altResponse.headers.get('Content-Type') || '';
+                            if (altContentType.includes('application/json') || altContentType.includes('text/event-stream')) {
+                                const altResponseText = await altResponse.text();
+                                let altResult;
+                                if (altResponseText.trim().startsWith('event:') || altResponseText.trim().startsWith('data:')) {
+                                    altResult = parseSSEResponse(altResponseText);
+                                } else {
+                                    altResult = JSON.parse(altResponseText);
+                                }
+                                if (altResult && altResult.jsonrpc === '2.0') {
+                                    log(`✅ Found MCP endpoint at: ${altUrl}`, 'success');
+                                    log(`💡 TIP: Update your server URL to: ${altUrl}`);
+                                    // Continue with this response
+                                    server.url = altUrl; // Update for subsequent requests
+                                    if (altResult.result) {
+                                        log(`📥 Received initialize response`);
+                                        // Continue processing with altResult
+                                        const initResult = altResult;
+                                        // Store server capabilities
+                                        serverCapabilities = initResult.result?.capabilities || {};
+                                        log(`📋 Server capabilities: ${Object.keys(serverCapabilities).join(', ') || 'none'}`);
+                                        // Jump to step 2
+                                        return await continueConnection(server, initResult, validationResults, accessToken);
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            // Continue trying other endpoints
+                        }
+                    }
+
+                    // Check if this might be an MCP UI resource itself
+                    if (responseText.includes('mcp-app') || responseText.includes('modelcontextprotocol')) {
+                        log(`🖼️ This appears to be an MCP UI resource (HTML component)`, 'warning');
+                        log(`   MCP UI resources are fetched via resources/read, not direct HTTP`, 'warning');
+                        log(`   You need the MCP server endpoint URL, not the UI resource URL`, 'warning');
+                    }
+
+                    throw new Error(`Server returned HTML instead of JSON-RPC. This URL (${server.url}) appears to be a web page, not an MCP endpoint. Try adding /mcp or /api to the URL.`);
+                }
+
+                // Parse response (JSON or SSE format)
+                let initResult;
+                try {
+                    // Check if response is SSE format (starts with "event:" or "data:")
+                    if (responseText.trim().startsWith('event:') || responseText.trim().startsWith('data:')) {
+                        log(`📡 Detected SSE format response`);
+                        initResult = parseSSEResponse(responseText);
+                    } else {
+                        initResult = JSON.parse(responseText);
+                    }
+                } catch (parseError) {
+                    log(`❌ Failed to parse response`, 'error');
+                    log(`   Response preview: ${responseText.substring(0, 200)}...`, 'error');
+                    throw new Error(`Invalid response: ${parseError.message}`);
+                }
+
                 log(`📥 Received initialize response`);
 
                 // Validate initialize response
@@ -877,6 +1247,11 @@
                 }
 
                 log(`✅ Server: ${initResult.result?.serverInfo?.name || 'Unknown'} v${initResult.result?.serverInfo?.version || '?'}`);
+
+                // Store server info and capabilities for later use
+                currentServerInfo = initResult.result?.serverInfo || null;
+                serverCapabilities = initResult.result?.capabilities || {};
+                log(`📋 Server capabilities: ${Object.keys(serverCapabilities).join(', ') || 'none'}`);
 
                 // Step 2: Send notifications/initialized (MCP protocol requirement)
                 log(`🔔 Step 2: Sending notifications/initialized...`);
@@ -891,12 +1266,13 @@
                 // Send notification (no response expected)
                 const notifHeaders = {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': 'application/json, text/event-stream, */*',
                     'mcp-protocol-version': '2024-11-05'
                 };
                 if (accessToken) {
                     notifHeaders['Authorization'] = `Bearer ${accessToken}`;
                 }
+                applyCustomHeaders(notifHeaders, customHeaders);
 
                 await fetch(server.url, {
                     method: 'POST',
@@ -918,12 +1294,13 @@
 
                 const toolsHeaders = {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': 'application/json, text/event-stream, */*',
                     'mcp-protocol-version': '2024-11-05'
                 };
                 if (accessToken) {
                     toolsHeaders['Authorization'] = `Bearer ${accessToken}`;
                 }
+                applyCustomHeaders(toolsHeaders, customHeaders);
 
                 const toolsResponse = await fetch(server.url, {
                     method: 'POST',
@@ -935,7 +1312,15 @@
                     throw new Error(`HTTP ${toolsResponse.status}: ${toolsResponse.statusText}`);
                 }
 
-                const toolsResult = await toolsResponse.json();
+                // Handle both JSON and SSE response formats
+                const toolsResponseText = await toolsResponse.text();
+                let toolsResult;
+                if (toolsResponseText.trim().startsWith('event:') || toolsResponseText.trim().startsWith('data:')) {
+                    log(`📡 Detected SSE format for tools/list response`);
+                    toolsResult = parseSSEResponse(toolsResponseText);
+                } else {
+                    toolsResult = JSON.parse(toolsResponseText);
+                }
                 log(`📥 Received tools/list response`);
 
                 // Validate tools/list response
@@ -956,11 +1341,59 @@
 
                 log(`✅ Connected successfully - Found ${tools.length} tools`);
 
+                // Step 4: Request resources list (if server supports it)
+                if (serverCapabilities.resources) {
+                    log(`📁 Step 4: Requesting resources from ${server.name}...`);
+                    try {
+                        const resourcesResult = await fetchMCPMethod(server.url, 'resources/list', {}, accessToken, customHeaders);
+
+                        // Validate resources/list response
+                        const resourcesValidation = mcpValidator.validateResourcesListResponse(resourcesResult);
+                        mcpValidator.logValidation('Resources List Response', resourcesValidation);
+                        validationResults.push(mcpValidator.generateValidationReport(resourcesValidation, 'Resources List Response'));
+
+                        if (resourcesResult.result?.resources) {
+                            resources = resourcesResult.result.resources;
+                            log(`✅ Found ${resources.length} resources`);
+                        }
+                    } catch (error) {
+                        log(`⚠️ Could not fetch resources: ${error.message}`, 'warning');
+                    }
+                } else {
+                    resources = [];
+                    log(`ℹ️ Server does not advertise resources capability`);
+                }
+
+                // Step 5: Request prompts list (if server supports it)
+                if (serverCapabilities.prompts) {
+                    log(`💬 Step 5: Requesting prompts from ${server.name}...`);
+                    try {
+                        const promptsResult = await fetchMCPMethod(server.url, 'prompts/list', {}, accessToken, customHeaders);
+
+                        // Validate prompts/list response
+                        const promptsValidation = mcpValidator.validatePromptsListResponse(promptsResult);
+                        mcpValidator.logValidation('Prompts List Response', promptsValidation);
+                        validationResults.push(mcpValidator.generateValidationReport(promptsValidation, 'Prompts List Response'));
+
+                        if (promptsResult.result?.prompts) {
+                            prompts = promptsResult.result.prompts;
+                            log(`✅ Found ${prompts.length} prompts`);
+                        }
+                    } catch (error) {
+                        log(`⚠️ Could not fetch prompts: ${error.message}`, 'warning');
+                    }
+                } else {
+                    prompts = [];
+                    log(`ℹ️ Server does not advertise prompts capability`);
+                }
+
                 // Display validation results
                 displayValidationResults(validationResults);
 
-                // Display tools
+                // Display tools, resources, and prompts
                 displayTools();
+                displayResources();
+                displayPrompts();
                 updateAuthUI();
 
                 // Hide loading overlay on success
@@ -977,6 +1410,85 @@
 
                 throw error;
             }
+        }
+
+        /**
+         * Parse SSE (Server-Sent Events) format response
+         * Extracts JSON from "data:" lines in SSE stream
+         */
+        function parseSSEResponse(sseText) {
+            const lines = sseText.split('\n');
+            let jsonData = null;
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('data:')) {
+                    const dataContent = trimmed.substring(5).trim();
+                    if (dataContent && dataContent !== '[DONE]') {
+                        try {
+                            jsonData = JSON.parse(dataContent);
+                            // Return the first valid JSON we find
+                            break;
+                        } catch (e) {
+                            // Continue looking for valid JSON
+                        }
+                    }
+                }
+            }
+
+            if (!jsonData) {
+                throw new Error('No valid JSON found in SSE response');
+            }
+
+            return jsonData;
+        }
+
+        /**
+         * Generic helper to call any MCP JSON-RPC method
+         */
+        async function fetchMCPMethod(serverUrl, method, params = {}, accessToken = null, customHeaders = {}) {
+            const request = {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                method: method,
+                params: params
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json, text/event-stream, */*',
+                'mcp-protocol-version': '2024-11-05'
+            };
+
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+
+            // Apply custom headers
+            applyCustomHeaders(headers, customHeaders);
+
+            // Log request details when custom headers are used
+            if (Object.keys(customHeaders).length > 0) {
+                console.log(`📡 POST ${serverUrl} [${method}]`);
+                console.log(`   Headers:`, JSON.stringify(headers, null, 2));
+            }
+
+            const response = await fetch(serverUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(request)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            // Handle both JSON and SSE response formats
+            const responseText = await response.text();
+            if (responseText.trim().startsWith('event:') || responseText.trim().startsWith('data:')) {
+                return parseSSEResponse(responseText);
+            }
+            return JSON.parse(responseText);
         }
 
         /**
@@ -1004,8 +1516,13 @@
                 sseClient.disconnect();
             }
 
-            // Create new SSE client
-            sseClient = new SSEMCPClient(server.url, server.name);
+            // Create new SSE client with custom headers
+            const customHeaders = getCustomHeaders(server);
+            sseClient = new SSEMCPClient(server.url, server.name, customHeaders);
+            if (Object.keys(customHeaders).length > 0) {
+                log(`📡 SSE ${server.url}`);
+                log(`   Headers: ${JSON.stringify(customHeaders)}`);
+            }
 
             // Set up event handlers
             sseClient.onConnected = () => {
@@ -1067,12 +1584,18 @@
 
             // Reset state
             tools = [];
+            resources = [];
+            prompts = [];
+            serverCapabilities = {};
+            currentServerInfo = null;
             isConnected = false;
 
             updateAuthUI();
 
             document.getElementById('server-info').style.display = 'none';
             document.getElementById('tools-section').style.display = 'none';
+            document.getElementById('resources-section').style.display = 'none';
+            document.getElementById('prompts-section').style.display = 'none';
 
             log('👋 Disconnected successfully');
         }
@@ -1092,6 +1615,7 @@
             if (validationSection) validationSection.style.display = 'none';
 
             // Clear server info
+            currentServerInfo = null;
             const serverDetails = document.getElementById('server-details');
             if (serverDetails) serverDetails.innerHTML = '';
 
@@ -1272,6 +1796,18 @@
             return div.innerHTML;
         }
 
+        /**
+         * Escape HTML for use in srcdoc attribute
+         * Only escapes quotes, preserves HTML tags and content
+         */
+        function escapeHtmlForSrcdoc(html) {
+            // For srcdoc, we only need to escape double quotes since the attribute uses double quotes
+            // We also need to handle ampersands carefully
+            return html
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;');
+        }
+
         async function callToolWithInputs(toolName) {
             console.log('callToolWithInputs called with:', toolName);
 
@@ -1282,7 +1818,7 @@
                 return;
             }
 
-            // Collect input values
+            // Collect input values with proper type coercion
             const args = {};
             if (tool.inputSchema && tool.inputSchema.properties) {
                 for (const propName of Object.keys(tool.inputSchema.properties)) {
@@ -1290,7 +1826,29 @@
                     if (inputEl) {
                         const value = inputEl.value.trim();
                         if (value) {
-                            args[propName] = value;
+                            const propSchema = tool.inputSchema.properties[propName];
+                            const propType = propSchema.type;
+
+                            // Coerce value to correct type based on schema
+                            if (propType === 'number' || propType === 'integer') {
+                                args[propName] = Number(value);
+                            } else if (propType === 'boolean') {
+                                args[propName] = value.toLowerCase() === 'true' || value === '1';
+                            } else if (propType === 'array') {
+                                try {
+                                    args[propName] = JSON.parse(value);
+                                } catch {
+                                    args[propName] = value.split(',').map(s => s.trim());
+                                }
+                            } else if (propType === 'object') {
+                                try {
+                                    args[propName] = JSON.parse(value);
+                                } catch {
+                                    args[propName] = value;
+                                }
+                            } else {
+                                args[propName] = value;
+                            }
                         }
                     }
                 }
@@ -1299,8 +1857,12 @@
             showLoading('Calling Tool', `Executing ${toolName}...`);
             log(`🛠️ Calling tool: ${toolName} with args: ${JSON.stringify(args)}`);
 
+            // Send tool input to any connected MCP App
+            sendToolInputToApp(toolName, args);
+
             try {
                 const server = servers[currentServer];
+                const customHeaders = getCustomHeaders(server);
 
                 // Build JSON-RPC request
                 const requestPayload = {
@@ -1313,13 +1875,24 @@
                     }
                 };
 
+                // Build headers for tool call
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json, text/event-stream, */*',
+                    'mcp-protocol-version': '2024-11-05'
+                };
+                applyCustomHeaders(headers, customHeaders);
+
+                // Log request details when custom headers are used
+                if (Object.keys(customHeaders).length > 0) {
+                    log(`📡 POST ${server.url} [tools/call: ${toolName}]`);
+                    log(`   Headers: ${JSON.stringify(headers)}`);
+                }
+
                 // Call tool directly via JSON-RPC
                 const response = await fetch(server.url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
+                    headers: headers,
                     body: JSON.stringify(requestPayload)
                 });
 
@@ -1327,7 +1900,20 @@
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                const result = await response.json();
+                // Handle both JSON and SSE response formats
+                const responseText = await response.text();
+                let result;
+                if (responseText.trim().startsWith('event:') || responseText.trim().startsWith('data:')) {
+                    log(`📡 Detected SSE format for tool response`);
+                    result = parseSSEResponse(responseText);
+                } else {
+                    result = JSON.parse(responseText);
+                }
+
+                // Send tool result to any connected MCP App
+                if (result.result) {
+                    sendToolResultToApp(toolName, result.result);
+                }
 
                 // Handle JSON-RPC response format
                 if (result.error) {
@@ -1336,90 +1922,98 @@
 
                 console.log('Tool result:', result.result);
 
-                // Show result in the tool's individual result div with split view
+                // Show result in the tool's individual result div
                 const toolResultDiv = document.getElementById(`result-${toolName}`);
                 if (toolResultDiv) {
-                    const splitViewId = `split-view-${Date.now()}`;
+                    // Check if result has MCP content array (new format)
+                    const toolContent = result.result?.content;
+                    if (Array.isArray(toolContent) && toolContent.length > 0) {
+                        // Use new content rendering for MCP content arrays
+                        toolResultDiv.innerHTML = renderMCPContent(toolContent, requestPayload, result);
+                    } else {
+                        // Legacy display for non-content results
+                        const splitViewId = `split-view-${Date.now()}`;
 
-                    toolResultDiv.innerHTML = `
-                        <div class="status success" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
-                            <strong>✅ Success</strong>
+                        toolResultDiv.innerHTML = `
+                            <div class="status success" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                                <strong>✅ Success</strong>
 
-                            <!-- Technical Details (Request & Response) -->
-                            <details open style="margin-top: 10px;">
-                                <summary style="cursor: pointer; font-weight: bold; color: #007bff;">🔧 Technical Details (Request & Response)</summary>
-                                <div id="${splitViewId}" style="display: flex; margin-top: 10px; height: 450px;">
-                                    <!-- Request Panel -->
-                                    <div class="split-panel-left" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
-                                        <div style="background: #007bff; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">
-                                            📤 Request
+                                <!-- Technical Details (Request & Response) -->
+                                <details open style="margin-top: 10px;">
+                                    <summary style="cursor: pointer; font-weight: bold; color: #007bff;">🔧 Technical Details (Request & Response)</summary>
+                                    <div id="${splitViewId}" style="display: flex; margin-top: 10px; height: 450px;">
+                                        <!-- Request Panel -->
+                                        <div class="split-panel-left" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                            <div style="background: #007bff; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">
+                                                📤 Request
+                                            </div>
+                                            <pre style="
+                                                margin: 0;
+                                                flex: 1;
+                                                font-size: 11px;
+                                                overflow-y: auto;
+                                                background: #f8f9fa;
+                                                padding: 15px;
+                                                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+                                                line-height: 1.5;
+                                                color: #2d3748;
+                                                white-space: pre-wrap;
+                                                word-wrap: break-word;
+                                            ">${prettyPrintJson(requestPayload)}</pre>
                                         </div>
-                                        <pre style="
-                                            margin: 0;
-                                            flex: 1;
-                                            font-size: 11px;
-                                            overflow-y: auto;
-                                            background: #f8f9fa;
-                                            padding: 15px;
-                                            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-                                            line-height: 1.5;
-                                            color: #2d3748;
-                                            white-space: pre-wrap;
-                                            word-wrap: break-word;
-                                        ">${prettyPrintJson(requestPayload)}</pre>
-                                    </div>
 
-                                    <!-- Draggable Divider -->
-                                    <div class="split-divider" style="
-                                        width: 5px;
-                                        background: #007bff;
-                                        cursor: col-resize;
-                                        position: relative;
-                                        flex-shrink: 0;
-                                    ">
-                                        <div style="
-                                            position: absolute;
-                                            top: 50%;
-                                            left: 50%;
-                                            transform: translate(-50%, -50%);
-                                            width: 20px;
-                                            height: 40px;
+                                        <!-- Draggable Divider -->
+                                        <div class="split-divider" style="
+                                            width: 5px;
                                             background: #007bff;
-                                            border-radius: 4px;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            color: white;
-                                            font-size: 10px;
-                                        ">⋮</div>
-                                    </div>
-
-                                    <!-- Response Panel -->
-                                    <div class="split-panel-right" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
-                                        <div style="background: #28a745; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">
-                                            📥 Response
+                                            cursor: col-resize;
+                                            position: relative;
+                                            flex-shrink: 0;
+                                        ">
+                                            <div style="
+                                                position: absolute;
+                                                top: 50%;
+                                                left: 50%;
+                                                transform: translate(-50%, -50%);
+                                                width: 20px;
+                                                height: 40px;
+                                                background: #007bff;
+                                                border-radius: 4px;
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                color: white;
+                                                font-size: 10px;
+                                            ">⋮</div>
                                         </div>
-                                        <pre style="
-                                            margin: 0;
-                                            flex: 1;
-                                            font-size: 11px;
-                                            overflow-y: auto;
-                                            background: #f8f9fa;
-                                            padding: 15px;
-                                            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-                                            line-height: 1.5;
-                                            color: #2d3748;
-                                            white-space: pre-wrap;
-                                            word-wrap: break-word;
-                                        ">${prettyPrintJson(result)}</pre>
+
+                                        <!-- Response Panel -->
+                                        <div class="split-panel-right" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                            <div style="background: #28a745; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">
+                                                📥 Response
+                                            </div>
+                                            <pre style="
+                                                margin: 0;
+                                                flex: 1;
+                                                font-size: 11px;
+                                                overflow-y: auto;
+                                                background: #f8f9fa;
+                                                padding: 15px;
+                                                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+                                                line-height: 1.5;
+                                                color: #2d3748;
+                                                white-space: pre-wrap;
+                                                word-wrap: break-word;
+                                            ">${prettyPrintJson(result)}</pre>
                                     </div>
                                 </div>
                             </details>
                         </div>
-                    `;
+                        `;
 
-                    // Initialize the resizable splitter
-                    initResizableSplitter(splitViewId);
+                        // Initialize the resizable splitter
+                        initResizableSplitter(splitViewId);
+                    }
                 }
 
                 hideLoading();
@@ -1534,6 +2128,56 @@
             }
         }
 
+        /**
+         * Display server information in the Server Information section
+         */
+        function displayServerInfo() {
+            const serverDetails = document.getElementById('server-details');
+            if (!serverDetails) return;
+
+            if (!currentServerInfo) {
+                serverDetails.innerHTML = '<p style="color: #666;">No server information available</p>';
+                return;
+            }
+
+            const serverName = currentServerInfo.name || 'Unknown';
+            const serverVersion = currentServerInfo.version || 'Unknown';
+            const protocolVersion = currentServerInfo.protocolVersion || 'Unknown';
+
+            let html = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <strong>Server Name:</strong><br>
+                            <span style="color: #4F46E5; font-size: 16px;">${serverName}</span>
+                        </div>
+                        <div>
+                            <strong>Version:</strong><br>
+                            <span style="color: #10B981; font-size: 16px;">${serverVersion}</span>
+                        </div>
+                        <div>
+                            <strong>Protocol Version:</strong><br>
+                            <span style="color: #666;">${protocolVersion}</span>
+                        </div>
+                        <div>
+                            <strong>Capabilities:</strong><br>
+                            <span style="color: #666;">${Object.keys(serverCapabilities).length > 0 ? Object.keys(serverCapabilities).join(', ') : 'None reported'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show capability details if available
+            if (Object.keys(serverCapabilities).length > 0) {
+                html += `<details style="margin-top: 10px;">
+                    <summary style="cursor: pointer; color: #4F46E5; font-weight: bold;">Capability Details</summary>
+                    <pre style="background: #1a1a2e; color: #10B981; padding: 10px; border-radius: 5px; overflow-x: auto; margin-top: 10px; font-size: 12px;">${JSON.stringify(serverCapabilities, null, 2)}</pre>
+                </details>`;
+            }
+
+            serverDetails.innerHTML = html;
+        }
+
         function updateAuthUI() {
             const authStatus = document.getElementById('auth-status');
             const authBtn = document.getElementById('auth-btn');
@@ -1548,6 +2192,7 @@
                 logoutBtn.disabled = false;
 
                 document.getElementById('server-info').style.display = 'block';
+                displayServerInfo();
                 // protocol-validation is shown/hidden by displayValidationResults
                 document.getElementById('tools-section').style.display = 'block';
             } else {
@@ -1560,6 +2205,8 @@
                 document.getElementById('server-info').style.display = 'none';
                 document.getElementById('protocol-validation').style.display = 'none';
                 document.getElementById('tools-section').style.display = 'none';
+                document.getElementById('resources-section').style.display = 'none';
+                document.getElementById('prompts-section').style.display = 'none';
             }
         }
 
@@ -1591,21 +2238,1113 @@
 
         function displayTools() {
             const toolsList = document.getElementById('tools-list');
-            
+
             if (tools.length === 0) {
                 toolsList.innerHTML = '<p>No tools available</p>';
                 return;
             }
 
-            toolsList.innerHTML = tools.map(tool => `
+            toolsList.innerHTML = tools.map(tool => {
+                const hasUI = tool._meta?.ui?.resourceUri;
+                const uiBadge = hasUI ? '<span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px;">MCP App</span>' : '';
+
+                return `
+                    <div class="tool-card">
+                        <div class="tool-name">${escapeHtml(tool.name)}${uiBadge}</div>
+                        <div class="tool-desc">${escapeHtml(tool.description || 'No description')}</div>
+                        ${hasUI ? `<div style="margin: 8px 0; padding: 8px; background: #d1ecf1; border-radius: 4px; font-size: 12px;">
+                            <strong>🖼️ UI Resource:</strong> <code>${escapeHtml(tool._meta.ui.resourceUri)}</code>
+                            <button onclick="loadMCPAppUI('${escapeHtml(tool.name)}', '${escapeHtml(tool._meta.ui.resourceUri)}')" style="margin-left: 10px; font-size: 11px; padding: 3px 8px;">
+                                Load UI
+                            </button>
+                        </div>` : ''}
+                        ${getToolInputs(tool)}
+                        <button onclick="callToolWithInputs('${escapeHtml(tool.name)}')">Call Tool</button>
+                        <div id="result-${escapeHtml(tool.name)}" style="margin-top: 10px;"></div>
+                        ${hasUI ? `<div id="ui-container-${escapeHtml(tool.name)}" style="margin-top: 10px;"></div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Load and display MCP App UI in iframe
+         */
+        async function loadMCPAppUI(toolName, resourceUri) {
+            const uiContainer = document.getElementById(`ui-container-${toolName}`);
+            if (!uiContainer) return;
+
+            // Get tool definition to access _meta.ui (CSP, permissions, etc.)
+            const tool = tools.find(t => t.name === toolName);
+            const uiMeta = tool?._meta?.ui || {};
+
+            // Log CSP configuration if present
+            if (uiMeta.csp) {
+                log(`🔒 Tool declares CSP: ${JSON.stringify(uiMeta.csp)}`);
+            }
+
+            showLoading('Loading MCP App', `Fetching UI for ${toolName}...`);
+            log(`🖼️ Loading MCP App UI: ${resourceUri}`);
+
+            try {
+                const server = servers[currentServer];
+
+                // Collect tool input from form fields with proper type coercion
+                const toolInput = {};
+                if (tool && tool.inputSchema && tool.inputSchema.properties) {
+                    for (const propName of Object.keys(tool.inputSchema.properties)) {
+                        const inputEl = document.getElementById(`${toolName}_${propName}`);
+                        if (inputEl && inputEl.value.trim()) {
+                            const value = inputEl.value.trim();
+                            const propSchema = tool.inputSchema.properties[propName];
+                            const propType = propSchema.type;
+
+                            // Coerce value to correct type based on schema
+                            if (propType === 'number' || propType === 'integer') {
+                                toolInput[propName] = Number(value);
+                            } else if (propType === 'boolean') {
+                                toolInput[propName] = value.toLowerCase() === 'true' || value === '1';
+                            } else if (propType === 'array') {
+                                try {
+                                    toolInput[propName] = JSON.parse(value);
+                                } catch {
+                                    toolInput[propName] = value.split(',').map(s => s.trim());
+                                }
+                            } else if (propType === 'object') {
+                                try {
+                                    toolInput[propName] = JSON.parse(value);
+                                } catch {
+                                    toolInput[propName] = value;
+                                }
+                            } else {
+                                toolInput[propName] = value;
+                            }
+                        }
+                    }
+                }
+
+                // Build URL to proxy endpoint
+                // The proxy fetches HTML via MCP and serves it directly (bypasses srcdoc CSP issues)
+                const params = new URLSearchParams();
+                params.set('server', server.url);
+                params.set('resource', resourceUri);
+                params.set('tool', toolName);
+
+                // Add all tool arguments as URL parameters
+                for (const [key, value] of Object.entries(toolInput)) {
+                    params.set(key, value);
+                }
+
+                const proxyUrl = `/mcPeek/mcp-app-proxy.php?${params.toString()}`;
+                log(`🔌 Using proxy: ${proxyUrl}`);
+
+                // Create iframe with src (not srcdoc) to allow external scripts
+                const frameId = `mcp-app-frame-${toolName}-${Date.now()}`;
+                uiContainer.innerHTML = `
+                    <div style="border: 2px solid #17a2b8; border-radius: 8px; overflow: hidden;">
+                        <div style="background: #17a2b8; color: white; padding: 8px 15px; font-size: 13px; display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>🖼️ MCP App:</strong> ${escapeHtml(toolName)}</span>
+                            <span style="font-size: 11px; opacity: 0.8;">${escapeHtml(resourceUri)}</span>
+                        </div>
+                        <iframe
+                            id="${frameId}"
+                            src="${escapeHtml(proxyUrl)}"
+                            sandbox="allow-scripts allow-forms allow-same-origin"
+                            style="width: 100%; min-height: 500px; border: none; display: block; background: white;"
+                        ></iframe>
+                        <div id="${frameId}-log" style="background: #f8f9fa; border-top: 1px solid #ddd; padding: 8px; font-size: 11px; font-family: monospace; max-height: 100px; overflow-y: auto;">
+                            <strong>MCP App Messages:</strong>
+                        </div>
+                    </div>
+                `;
+
+                // Setup postMessage communication
+                const bridge = setupMCPAppBridge(frameId, toolName);
+
+                // Wait for iframe to load
+                // MCP Apps flow: App sends ui/initialize request, host responds
+                const iframe = document.getElementById(frameId);
+                if (iframe) {
+                    iframe.onload = () => {
+                        log(`📄 MCP App iframe loaded, waiting for ui/initialize request...`);
+
+                        // Queue tool input to be sent after app initializes
+                        if (Object.keys(toolInput).length > 0) {
+                            sendToolInputToApp(toolName, toolInput);
+                        }
+                    };
+                }
+
+                hideLoading();
+                log(`✅ MCP App UI loaded for ${toolName}`);
+
+            } catch (error) {
+                hideLoading();
+                uiContainer.innerHTML = `
+                    <div class="status error" style="padding: 10px; border-radius: 5px;">
+                        <strong>❌ Failed to load MCP App UI</strong>
+                        <p style="margin: 5px 0; font-size: 12px;">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
+                log(`❌ Failed to load MCP App UI: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Build Content-Security-Policy meta tag from server-declared CSP requirements
+         * Per MCP Apps spec: _meta.ui.csp declares allowed external origins
+         * @param {object} cspConfig - CSP configuration from _meta.ui.csp
+         * @returns {string} - CSP meta tag HTML
+         */
+        function buildCSPMetaTag(cspConfig) {
+            // Default restrictive policy
+            const defaults = {
+                'default-src': ["'self'"],
+                'script-src': ["'self'", "'unsafe-inline'"],
+                'style-src': ["'self'", "'unsafe-inline'"],
+                'img-src': ["'self'", "data:", "blob:"],
+                'connect-src': ["'self'"],
+                'font-src': ["'self'", "data:"],
+                'frame-src': ["'self'"]
+            };
+
+            // Merge server-declared CSP with defaults
+            // Server can specify: { scriptSrc: ["https://example.com"], styleSrc: [...], ... }
+            // Or use the array format: ["https://example.com", "https://other.com"]
+            const policy = { ...defaults };
+
+            if (cspConfig) {
+                // Handle array format (list of allowed origins for all directives)
+                if (Array.isArray(cspConfig)) {
+                    const origins = cspConfig;
+                    policy['script-src'] = [...policy['script-src'], ...origins];
+                    policy['style-src'] = [...policy['style-src'], ...origins];
+                    policy['img-src'] = [...policy['img-src'], ...origins, 'https:', 'http:'];
+                    policy['connect-src'] = [...policy['connect-src'], ...origins, 'https:', 'wss:'];
+                    policy['font-src'] = [...policy['font-src'], ...origins];
+                    policy['frame-src'] = [...policy['frame-src'], ...origins];
+                } else if (typeof cspConfig === 'object') {
+                    // Official MCP Apps spec format: connectDomains and resourceDomains
+                    // Per https://modelcontextprotocol.github.io/ext-apps/api/
+                    if (cspConfig.connectDomains) {
+                        // connectDomains: allowed for fetch/XHR/WebSocket
+                        policy['connect-src'] = [...policy['connect-src'], ...cspConfig.connectDomains, 'https:', 'wss:'];
+                    }
+                    if (cspConfig.resourceDomains) {
+                        // resourceDomains: allowed for scripts, stylesheets, images, fonts
+                        const resources = cspConfig.resourceDomains;
+                        policy['script-src'] = [...policy['script-src'], ...resources];
+                        policy['style-src'] = [...policy['style-src'], ...resources];
+                        policy['img-src'] = [...policy['img-src'], ...resources];
+                        policy['font-src'] = [...policy['font-src'], ...resources];
+                        policy['frame-src'] = [...policy['frame-src'], ...resources];
+                    }
+
+                    // Also support granular directives for flexibility
+                    if (cspConfig.scriptSrc) policy['script-src'] = [...policy['script-src'], ...cspConfig.scriptSrc];
+                    if (cspConfig.styleSrc) policy['style-src'] = [...policy['style-src'], ...cspConfig.styleSrc];
+                    if (cspConfig.imgSrc) policy['img-src'] = [...policy['img-src'], ...cspConfig.imgSrc];
+                    if (cspConfig.connectSrc) policy['connect-src'] = [...policy['connect-src'], ...cspConfig.connectSrc];
+                    if (cspConfig.fontSrc) policy['font-src'] = [...policy['font-src'], ...cspConfig.fontSrc];
+                    if (cspConfig.frameSrc) policy['frame-src'] = [...policy['frame-src'], ...cspConfig.frameSrc];
+                    if (cspConfig.defaultSrc) policy['default-src'] = [...policy['default-src'], ...cspConfig.defaultSrc];
+
+                    // Also support 'origins' shorthand for all directives
+                    if (cspConfig.origins) {
+                        const origins = cspConfig.origins;
+                        policy['script-src'] = [...policy['script-src'], ...origins];
+                        policy['style-src'] = [...policy['style-src'], ...origins];
+                        policy['connect-src'] = [...policy['connect-src'], ...origins];
+                    }
+                }
+            }
+
+            // Build CSP string
+            const cspString = Object.entries(policy)
+                .map(([directive, values]) => `${directive} ${[...new Set(values)].join(' ')}`)
+                .join('; ');
+
+            console.log('[MCPeek] Built CSP:', cspString);
+            console.log('[MCPeek] CSP policy object:', JSON.stringify(policy));
+            return `<meta http-equiv="Content-Security-Policy" content="${cspString}">`;
+        }
+
+        /**
+         * Render MCP App iframe with host bridge script
+         * @param {string} frameId - Unique ID for the iframe
+         * @param {string} htmlContent - HTML content to render
+         * @param {string} toolName - Name of the tool
+         * @param {string} resourceUri - URI of the resource
+         * @param {object} uiMeta - Optional _meta.ui object from tool definition (contains csp, permissions, etc.)
+         */
+        function renderMCPAppFrame(frameId, htmlContent, toolName, resourceUri, uiMeta = {}) {
+            // Build CSP based on server-declared requirements (_meta.ui.csp)
+            const cspConfig = uiMeta.csp || {};
+            console.log('[MCPeek] renderMCPAppFrame - uiMeta:', JSON.stringify(uiMeta));
+            console.log('[MCPeek] renderMCPAppFrame - cspConfig:', JSON.stringify(cspConfig));
+            const cspMetaTag = buildCSPMetaTag(cspConfig);
+            console.log('[MCPeek] renderMCPAppFrame - cspMetaTag:', cspMetaTag);
+
+            // Inject the MCP App host bridge into the HTML
+            const hostBridgeScript = `
+                <script>
+                    // MCP App Host Bridge - enables communication with MCPeek
+                    window.MCPApp = {
+                        _pending: new Map(),
+                        _nextId: 1,
+
+                        // Connect to host
+                        async connect() {
+                            return new Promise((resolve) => {
+                                window.addEventListener('message', (event) => {
+                                    if (event.data?.type === 'mcp-app-ready') {
+                                        resolve();
+                                    }
+                                    if (event.data?.type === 'mcp-app-response') {
+                                        const pending = this._pending.get(event.data.id);
+                                        if (pending) {
+                                            this._pending.delete(event.data.id);
+                                            if (event.data.error) {
+                                                pending.reject(new Error(event.data.error));
+                                            } else {
+                                                pending.resolve(event.data.result);
+                                            }
+                                        }
+                                    }
+                                    if (event.data?.type === 'mcp-tool-result') {
+                                        if (this.ontoolresult) {
+                                            this.ontoolresult(event.data.result);
+                                        }
+                                    }
+                                });
+                                parent.postMessage({ type: 'mcp-app-connect', toolName: '${toolName}' }, '*');
+                            });
+                        },
+
+                        // Call a server tool
+                        async callServerTool(params) {
+                            const id = this._nextId++;
+                            return new Promise((resolve, reject) => {
+                                this._pending.set(id, { resolve, reject });
+                                parent.postMessage({
+                                    type: 'mcp-app-call-tool',
+                                    id: id,
+                                    params: params
+                                }, '*');
+                            });
+                        },
+
+                        // Update model context
+                        async updateModelContext(context) {
+                            parent.postMessage({
+                                type: 'mcp-app-update-context',
+                                context: context
+                            }, '*');
+                        },
+
+                        // Callback for tool results
+                        ontoolresult: null
+                    };
+
+                    // Auto-connect on load
+                    document.addEventListener('DOMContentLoaded', () => {
+                        if (typeof App !== 'undefined' && App.connect) {
+                            App.connect();
+                        } else {
+                            MCPApp.connect();
+                        }
+                    });
+                <\/script>
+            `;
+
+            // Insert CSP and bridge script into HTML
+            let modifiedHtml = htmlContent;
+
+            // Insert CSP meta tag in <head>
+            if (modifiedHtml.includes('<head>')) {
+                modifiedHtml = modifiedHtml.replace('<head>', '<head>' + cspMetaTag);
+            } else if (modifiedHtml.includes('<!DOCTYPE')) {
+                modifiedHtml = modifiedHtml.replace(/<!DOCTYPE[^>]*>/i, '$&<head>' + cspMetaTag + '</head>');
+            } else {
+                modifiedHtml = '<head>' + cspMetaTag + '</head>' + modifiedHtml;
+            }
+
+            // Insert bridge script before </head> or at start of body
+            if (modifiedHtml.includes('</head>')) {
+                modifiedHtml = modifiedHtml.replace('</head>', hostBridgeScript + '</head>');
+            } else if (modifiedHtml.includes('<body>')) {
+                modifiedHtml = modifiedHtml.replace('<body>', '<body>' + hostBridgeScript);
+            } else {
+                modifiedHtml = hostBridgeScript + modifiedHtml;
+            }
+
+            return `
+                <div style="border: 2px solid #17a2b8; border-radius: 8px; overflow: hidden;">
+                    <div style="background: #17a2b8; color: white; padding: 8px 15px; font-size: 13px; display: flex; justify-content: space-between; align-items: center;">
+                        <span><strong>🖼️ MCP App:</strong> ${escapeHtml(toolName)}</span>
+                        <span style="font-size: 11px; opacity: 0.8;">${escapeHtml(resourceUri)}</span>
+                    </div>
+                    <iframe
+                        id="${frameId}"
+                        sandbox="allow-scripts allow-forms allow-same-origin"
+                        srcdoc="${escapeHtmlForSrcdoc(modifiedHtml)}"
+                        style="width: 100%; min-height: 400px; border: none; display: block; background: white;"
+                    ></iframe>
+                    <div id="${frameId}-log" style="background: #f8f9fa; border-top: 1px solid #ddd; padding: 8px; font-size: 11px; font-family: monospace; max-height: 100px; overflow-y: auto; display: none;">
+                        <strong>MCP App Messages:</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Setup postMessage bridge for MCP App communication
+         * Implements MCP Apps JSON-RPC protocol over postMessage
+         */
+        function setupMCPAppBridge(frameId, toolName) {
+            const iframe = document.getElementById(frameId);
+            const logDiv = document.getElementById(`${frameId}-log`);
+
+            if (!iframe) return;
+
+            // Store bridge reference for sending data to app
+            const bridge = {
+                iframe: iframe,
+                toolName: toolName,
+                initialized: false,
+                pendingToolInput: null,    // Store tool input to send after initialization
+
+                // Send JSON-RPC notification to app
+                sendNotification(method, params) {
+                    const message = {
+                        jsonrpc: '2.0',
+                        method: method,
+                        params: params
+                    };
+                    iframe.contentWindow.postMessage(message, '*');
+                    logBridgeMessage('HOST→APP', method, params);
+                },
+
+                // Send JSON-RPC response to app
+                sendResponse(id, result, error) {
+                    const message = {
+                        jsonrpc: '2.0',
+                        id: id
+                    };
+                    if (error) {
+                        message.error = { code: -32000, message: error };
+                    } else {
+                        message.result = result;
+                    }
+                    iframe.contentWindow.postMessage(message, '*');
+                    logBridgeMessage('HOST→APP', `response:${id}`, result || error);
+                },
+
+                // Send tool input to app (ui/notifications/tool-input)
+                // Per MCP Apps spec: should be sent AFTER ui/initialize completes
+                sendToolInput(toolInput) {
+                    if (!this.initialized) {
+                        // Store for sending after initialization
+                        this.pendingToolInput = toolInput;
+                        log(`⏳ Queuing tool input until app initializes...`);
+                        console.log('[MCPeek] Tool input queued, waiting for ui/initialize:', toolInput);
+                        return;
+                    }
+
+                    this._doSendToolInput(toolInput);
+                },
+
+                // Actually send the tool input (called after initialization)
+                _doSendToolInput(toolInput) {
+                    // Send as JSON-RPC notification per MCP Apps spec
+                    this.sendNotification('ui/notifications/tool-input', {
+                        toolName: toolName,
+                        arguments: toolInput
+                    });
+
+                    console.log('[MCPeek] Sent tool input:', toolInput);
+                    log(`📤 Sent tool input: ${JSON.stringify(toolInput)}`);
+                },
+
+                // Called when app completes initialization
+                onInitialized() {
+                    this.initialized = true;
+                    log(`✅ MCP App initialized: ${toolName}`);
+
+                    // Send any pending tool input
+                    if (this.pendingToolInput) {
+                        log(`📤 Sending queued tool input...`);
+                        this._doSendToolInput(this.pendingToolInput);
+                        this.pendingToolInput = null;
+                    }
+                },
+
+                // Send tool result to app (ui/notifications/tool-result)
+                sendToolResult(result) {
+                    this.sendNotification('ui/notifications/tool-result', {
+                        toolName: toolName,
+                        result: result,
+                        content: result?.content   // Also include content at top level for convenience
+                    });
+                }
+            };
+
+            // Store bridge globally for access from callToolWithInputs
+            if (!window.mcpAppBridges) window.mcpAppBridges = {};
+            window.mcpAppBridges[toolName] = bridge;
+
+            function logBridgeMessage(direction, method, data) {
+                if (logDiv) {
+                    logDiv.style.display = 'block';
+                    const msgLog = document.createElement('div');
+                    msgLog.style.borderBottom = '1px solid #eee';
+                    msgLog.style.padding = '2px 0';
+                    msgLog.innerHTML = `<span style="color: ${direction.includes('HOST') ? '#007bff' : '#28a745'}">[${new Date().toLocaleTimeString()}] ${direction}</span> <strong>${method}</strong>`;
+                    logDiv.appendChild(msgLog);
+                    logDiv.scrollTop = logDiv.scrollHeight;
+                }
+            }
+
+            // Listen for messages from iframe
+            window.addEventListener('message', async (event) => {
+                // Security: verify source is our iframe
+                if (event.source !== iframe.contentWindow) return;
+
+                const data = event.data;
+                if (!data) return;
+
+                // Handle JSON-RPC 2.0 messages
+                if (data.jsonrpc === '2.0') {
+                    logBridgeMessage('APP→HOST', data.method || `response:${data.id}`, data.params || data.result);
+
+                    // Handle ui/initialize request per MCP Apps spec
+                    if (data.method === 'ui/initialize') {
+                        log(`🔗 MCP App requesting initialization: ${toolName}`);
+
+                        // Get tool definition for context
+                        const tool = tools.find(t => t.name === toolName);
+                        const server = servers[currentServer];
+
+                        // Detect theme
+                        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                        // Send initialize response per MCP Apps spec (matching GPT implementation)
+                        bridge.sendResponse(data.id, {
+                            protocolVersion: '2026-01-26',
+                            hostInfo: {
+                                name: 'MCPeek',
+                                version: '2.1.0'
+                            },
+                            hostCapabilities: {
+                                serverResources: { listChanged: false },
+                                serverTools: { listChanged: false },
+                                logging: {},
+                                message: {},
+                                openLinks: {}
+                            },
+                            hostContext: {
+                                theme: isDark ? 'dark' : 'light',
+                                locale: navigator.language || 'en-US',
+                                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+                                platform: 'web',
+                                displayMode: 'inline',
+                                availableDisplayModes: ['inline'],
+                                safeAreaInsets: { top: 0, right: 0, bottom: 0, left: 0 },
+                                containerDimensions: { maxHeight: 800 },
+                                styles: {
+                                    variables: {
+                                        '--font-sans': 'system-ui, -apple-system, sans-serif',
+                                        '--color-background-primary': isDark ? '#1f2937' : '#ffffff',
+                                        '--color-text-primary': isDark ? '#f3f4f6' : '#1f2937'
+                                    }
+                                }
+                            }
+                        });
+
+                        // Send tool notifications AFTER init response (like GPT does)
+                        setTimeout(() => {
+                            bridge.onInitialized();
+                        }, 100);
+                        return;
+                    }
+
+                    // Handle tools/call request from app
+                    if (data.method === 'tools/call') {
+                        const params = data.params || {};
+                        log(`🛠️ MCP App calling tool: ${params.name}`);
+                        try {
+                            const server = servers[currentServer];
+                            const accessToken = await getAccessTokenForServer(server.url);
+                            const customHeaders = getCustomHeaders(server);
+                            const result = await fetchMCPMethod(
+                                server.url,
+                                'tools/call',
+                                { name: params.name, arguments: params.arguments || {} },
+                                accessToken,
+                                customHeaders
+                            );
+                            bridge.sendResponse(data.id, result.result);
+                        } catch (error) {
+                            bridge.sendResponse(data.id, null, error.message);
+                        }
+                        return;
+                    }
+
+                    // Handle ui/updateContext notification
+                    if (data.method === 'ui/updateContext') {
+                        log(`📝 MCP App context update from ${toolName}`);
+                        if (data.params?.content) {
+                            const contextText = data.params.content.map(c =>
+                                c.type === 'text' ? c.text : JSON.stringify(c)
+                            ).join(', ');
+                            log(`   Context: ${contextText.substring(0, 200)}${contextText.length > 200 ? '...' : ''}`);
+                        }
+                        return;
+                    }
+
+                    // Handle ui/log notification
+                    if (data.method === 'ui/log') {
+                        const level = data.params?.level || 'info';
+                        const message = data.params?.message || '';
+                        log(`[MCP App ${toolName}] ${message}`, level === 'error' ? 'error' : 'info');
+                        return;
+                    }
+
+                    // Handle ui/openLink notification
+                    if (data.method === 'ui/openLink') {
+                        const url = data.params?.url;
+                        if (url) {
+                            log(`🔗 MCP App opening link: ${url}`);
+                            window.open(url, '_blank');
+                        }
+                        return;
+                    }
+                }
+
+                // Legacy format support (for apps not using JSON-RPC)
+                if (data.type === 'mcp-app-connect') {
+                    log(`🔗 MCP App connected (legacy): ${toolName}`);
+                    iframe.contentWindow.postMessage({ type: 'mcp-app-ready' }, '*');
+                    // Treat legacy connect as initialization
+                    bridge.onInitialized();
+                }
+
+                // Handle 'mcp-app-ready' from app
+                if (data.type === 'mcp-app-ready') {
+                    log(`🔗 MCP App ready: ${toolName}`);
+                    bridge.onInitialized();
+                }
+            });
+
+            // Fallback: if app doesn't send ui/initialize within 2 seconds, send data anyway
+            setTimeout(() => {
+                if (!bridge.initialized && bridge.pendingToolInput) {
+                    log(`⏱️ Timeout: sending tool input without initialization handshake`);
+                    bridge.initialized = true;
+                    bridge._doSendToolInput(bridge.pendingToolInput);
+                    bridge.pendingToolInput = null;
+                }
+            }, 2000);
+
+            log(`🔌 MCP App bridge ready for: ${toolName}`);
+            return bridge;
+        }
+
+        /**
+         * Send tool input to an MCP App
+         */
+        function sendToolInputToApp(toolName, toolInput) {
+            const bridge = window.mcpAppBridges?.[toolName];
+            if (bridge) {
+                bridge.sendToolInput(toolInput);
+            }
+        }
+
+        /**
+         * Send tool result to an MCP App
+         */
+        function sendToolResultToApp(toolName, result) {
+            const bridge = window.mcpAppBridges?.[toolName];
+            if (bridge) {
+                bridge.sendToolResult(result);
+            }
+        }
+
+        /**
+         * Display available resources
+         */
+        function displayResources() {
+            const resourcesList = document.getElementById('resources-list');
+            const resourcesSection = document.getElementById('resources-section');
+
+            if (!resources || resources.length === 0) {
+                resourcesSection.style.display = 'none';
+                return;
+            }
+
+            resourcesSection.style.display = 'block';
+            resourcesList.innerHTML = resources.map(resource => `
                 <div class="tool-card">
-                    <div class="tool-name">${tool.name}</div>
-                    <div class="tool-desc">${tool.description || 'No description'}</div>
-                    ${getToolInputs(tool)}
-                    <button onclick="callToolWithInputs('${tool.name}')">Call Tool</button>
-                    <div id="result-${tool.name}" style="margin-top: 10px;"></div>
+                    <div class="tool-name" style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px;">${getResourceIcon(resource.mimeType)}</span>
+                        ${escapeHtml(resource.name || resource.uri)}
+                    </div>
+                    <div class="tool-desc">${escapeHtml(resource.description || 'No description')}</div>
+                    <div style="margin: 8px 0; padding: 8px; background: #e9ecef; border-radius: 4px; font-family: monospace; font-size: 12px; word-break: break-all;">
+                        URI: ${escapeHtml(resource.uri)}
+                    </div>
+                    ${resource.mimeType ? `<div style="color: #666; font-size: 12px;">MIME Type: ${escapeHtml(resource.mimeType)}</div>` : ''}
+                    <button onclick="readResource('${escapeHtml(resource.uri)}')" style="margin-top: 10px;">
+                        📖 Read Resource
+                    </button>
+                    <div id="resource-result-${encodeURIComponent(resource.uri)}" style="margin-top: 10px;"></div>
                 </div>
             `).join('');
+        }
+
+        /**
+         * Get icon for resource based on MIME type
+         */
+        function getResourceIcon(mimeType) {
+            if (!mimeType) return '📄';
+            if (mimeType.startsWith('image/')) return '🖼️';
+            if (mimeType.startsWith('text/')) return '📝';
+            if (mimeType.startsWith('application/json')) return '📊';
+            if (mimeType.startsWith('application/pdf')) return '📕';
+            if (mimeType.includes('javascript') || mimeType.includes('typescript')) return '⚙️';
+            if (mimeType.includes('html')) return '🌐';
+            if (mimeType.includes('css')) return '🎨';
+            return '📄';
+        }
+
+        /**
+         * Read a resource from the MCP server
+         */
+        async function readResource(uri) {
+            const resultDiv = document.getElementById(`resource-result-${encodeURIComponent(uri)}`);
+            if (!resultDiv) return;
+
+            showLoading('Reading Resource', `Fetching ${uri}...`);
+            log(`📖 Reading resource: ${uri}`);
+
+            try {
+                const server = servers[currentServer];
+                const accessToken = await getAccessTokenForServer(server.url);
+                const customHeaders = getCustomHeaders(server);
+
+                const requestPayload = {
+                    jsonrpc: '2.0',
+                    id: Date.now(),
+                    method: 'resources/read',
+                    params: { uri: uri }
+                };
+
+                const result = await fetchMCPMethod(server.url, 'resources/read', { uri: uri }, accessToken, customHeaders);
+
+                if (result.error) {
+                    throw new Error(result.error.message || JSON.stringify(result.error));
+                }
+
+                // Render the resource content
+                const contents = result.result?.contents || [];
+                resultDiv.innerHTML = renderMCPContent(contents, requestPayload, result);
+
+                hideLoading();
+                log(`✅ Resource read successfully`);
+
+            } catch (error) {
+                hideLoading();
+                resultDiv.innerHTML = `
+                    <div class="status error" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                        <strong>❌ Error</strong>
+                        <p style="margin: 5px 0; font-size: 12px;">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
+                log(`❌ Failed to read resource: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Display available prompts
+         */
+        function displayPrompts() {
+            const promptsList = document.getElementById('prompts-list');
+            const promptsSection = document.getElementById('prompts-section');
+
+            if (!prompts || prompts.length === 0) {
+                promptsSection.style.display = 'none';
+                return;
+            }
+
+            promptsSection.style.display = 'block';
+            promptsList.innerHTML = prompts.map(prompt => `
+                <div class="tool-card">
+                    <div class="tool-name">💬 ${escapeHtml(prompt.name)}</div>
+                    <div class="tool-desc">${escapeHtml(prompt.description || 'No description')}</div>
+                    ${getPromptInputs(prompt)}
+                    <button onclick="getPrompt('${escapeHtml(prompt.name)}')" style="margin-top: 10px;">
+                        📤 Get Prompt
+                    </button>
+                    <div id="prompt-result-${encodeURIComponent(prompt.name)}" style="margin-top: 10px;"></div>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * Generate input fields for prompt arguments
+         */
+        function getPromptInputs(prompt) {
+            if (!prompt.arguments || prompt.arguments.length === 0) {
+                return '<p style="font-size: 12px; color: #666;">No arguments required</p>';
+            }
+
+            return prompt.arguments.map(arg => `
+                <div style="margin: 5px 0;">
+                    <label style="font-size: 12px; color: #666;">
+                        ${escapeHtml(arg.name)}${arg.required ? ' *' : ''}:
+                    </label>
+                    <input type="text"
+                           id="prompt_${encodeURIComponent(prompt.name)}_${encodeURIComponent(arg.name)}"
+                           placeholder="${escapeHtml(arg.description || arg.name)}"
+                           style="width: 100%; padding: 4px; margin-top: 2px; border: 1px solid #ddd; border-radius: 3px;"
+                           ${arg.required ? 'required' : ''}>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * Get a prompt from the MCP server
+         */
+        async function getPrompt(promptName) {
+            const resultDiv = document.getElementById(`prompt-result-${encodeURIComponent(promptName)}`);
+            if (!resultDiv) return;
+
+            // Find prompt definition
+            const prompt = prompts.find(p => p.name === promptName);
+            if (!prompt) {
+                log(`❌ Prompt ${promptName} not found`, 'error');
+                return;
+            }
+
+            // Collect arguments
+            const args = {};
+            if (prompt.arguments) {
+                for (const arg of prompt.arguments) {
+                    const inputEl = document.getElementById(`prompt_${encodeURIComponent(promptName)}_${encodeURIComponent(arg.name)}`);
+                    if (inputEl && inputEl.value.trim()) {
+                        args[arg.name] = inputEl.value.trim();
+                    }
+                }
+            }
+
+            showLoading('Getting Prompt', `Fetching ${promptName}...`);
+            log(`💬 Getting prompt: ${promptName} with args: ${JSON.stringify(args)}`);
+
+            try {
+                const server = servers[currentServer];
+                const accessToken = await getAccessTokenForServer(server.url);
+                const customHeaders = getCustomHeaders(server);
+
+                const requestPayload = {
+                    jsonrpc: '2.0',
+                    id: Date.now(),
+                    method: 'prompts/get',
+                    params: {
+                        name: promptName,
+                        arguments: args
+                    }
+                };
+
+                const result = await fetchMCPMethod(server.url, 'prompts/get', { name: promptName, arguments: args }, accessToken, customHeaders);
+
+                if (result.error) {
+                    throw new Error(result.error.message || JSON.stringify(result.error));
+                }
+
+                // Display the prompt messages
+                const messages = result.result?.messages || [];
+                resultDiv.innerHTML = renderPromptMessages(messages, requestPayload, result);
+
+                hideLoading();
+                log(`✅ Prompt retrieved successfully`);
+
+            } catch (error) {
+                hideLoading();
+                resultDiv.innerHTML = `
+                    <div class="status error" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                        <strong>❌ Error</strong>
+                        <p style="margin: 5px 0; font-size: 12px;">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
+                log(`❌ Failed to get prompt: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Render MCP content array (used by tools and resources)
+         * Supports: text, image, resource, embedded (UI components)
+         */
+        function renderMCPContent(contents, requestPayload, fullResult) {
+            const splitViewId = `split-view-${Date.now()}`;
+
+            let contentHtml = contents.map((content, index) => {
+                return renderSingleContent(content, index);
+            }).join('');
+
+            // Check if any content has UI components
+            const hasUIContent = contents.some(c => c.type === 'ui' || c.type === 'embedded' || c.mimeType?.includes('html'));
+
+            return `
+                <div class="status success" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                    <details open>
+                        <summary style="cursor: pointer; font-weight: bold;">✅ Content Retrieved (${contents.length} item${contents.length !== 1 ? 's' : ''})</summary>
+
+                        <div style="margin-top: 10px;">
+                            ${contentHtml}
+                        </div>
+
+                        ${hasUIContent ? `
+                            <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+                                <strong>🖼️ UI Content Detected</strong>
+                                <p style="margin: 5px 0; font-size: 12px;">This content includes interactive UI components. They are rendered in a sandboxed iframe for security.</p>
+                            </div>
+                        ` : ''}
+                    </details>
+
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer; font-weight: bold; color: #007bff;">🔧 Technical Details</summary>
+                        <div id="${splitViewId}" style="display: flex; margin-top: 10px; height: 300px;">
+                            <div class="split-panel-left" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                <div style="background: #007bff; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">📤 Request</div>
+                                <pre style="margin: 0; flex: 1; font-size: 11px; overflow-y: auto; background: #f8f9fa; padding: 15px; font-family: monospace; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">${prettyPrintJson(requestPayload)}</pre>
+                            </div>
+                            <div class="split-divider" style="width: 5px; background: #007bff; cursor: col-resize;"></div>
+                            <div class="split-panel-right" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                <div style="background: #28a745; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">📥 Response</div>
+                                <pre style="margin: 0; flex: 1; font-size: 11px; overflow-y: auto; background: #f8f9fa; padding: 15px; font-family: monospace; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">${prettyPrintJson(fullResult)}</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            `;
+        }
+
+        /**
+         * Render a single content item based on its type
+         */
+        function renderSingleContent(content, index) {
+            const type = content.type || 'unknown';
+
+            switch (type) {
+                case 'text':
+                    return renderTextContent(content, index);
+                case 'image':
+                    return renderImageContent(content, index);
+                case 'resource':
+                    return renderResourceContent(content, index);
+                case 'ui':
+                case 'embedded':
+                    return renderUIContent(content, index);
+                default:
+                    // Check MIME type for additional handling
+                    if (content.mimeType) {
+                        if (content.mimeType.startsWith('image/')) {
+                            return renderImageContent(content, index);
+                        }
+                        if (content.mimeType.includes('html')) {
+                            return renderUIContent(content, index);
+                        }
+                        if (content.mimeType.startsWith('text/')) {
+                            return renderTextContent(content, index);
+                        }
+                    }
+                    // Fallback: show raw JSON
+                    return `
+                        <div style="margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #6c757d;">
+                            <div style="font-weight: bold; color: #6c757d; margin-bottom: 8px;">📦 Unknown Content (${type})</div>
+                            <pre style="white-space: pre-wrap; margin: 0; font-size: 12px; background: #e9ecef; padding: 10px; border-radius: 4px;">${escapeHtml(JSON.stringify(content, null, 2))}</pre>
+                        </div>
+                    `;
+            }
+        }
+
+        /**
+         * Render text content
+         */
+        function renderTextContent(content, index) {
+            const text = content.text || '';
+            const isMarkdown = content.mimeType === 'text/markdown';
+
+            return `
+                <div style="margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #007bff;">
+                    <div style="font-weight: bold; color: #007bff; margin-bottom: 8px;">
+                        📝 Text ${isMarkdown ? '(Markdown)' : ''} ${index > 0 ? `#${index + 1}` : ''}
+                    </div>
+                    <pre style="white-space: pre-wrap; margin: 0; font-size: 13px; line-height: 1.5;">${escapeHtml(text)}</pre>
+                </div>
+            `;
+        }
+
+        /**
+         * Render image content
+         */
+        function renderImageContent(content, index) {
+            const mimeType = content.mimeType || 'image/png';
+            let imgSrc = '';
+
+            if (content.data) {
+                // Base64 encoded image
+                imgSrc = `data:${mimeType};base64,${content.data}`;
+            } else if (content.uri) {
+                // External URI
+                imgSrc = content.uri;
+            } else if (content.url) {
+                // URL field
+                imgSrc = content.url;
+            }
+
+            return `
+                <div style="margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #28a745;">
+                    <div style="font-weight: bold; color: #28a745; margin-bottom: 8px;">
+                        🖼️ Image ${index > 0 ? `#${index + 1}` : ''} (${mimeType})
+                    </div>
+                    <img src="${imgSrc}" style="max-width: 100%; max-height: 500px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" alt="MCP Image Content">
+                </div>
+            `;
+        }
+
+        /**
+         * Render resource reference content
+         */
+        function renderResourceContent(content, index) {
+            const resource = content.resource || {};
+            const uri = resource.uri || content.uri || 'unknown';
+
+            return `
+                <div style="margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #17a2b8;">
+                    <div style="font-weight: bold; color: #17a2b8; margin-bottom: 8px;">
+                        📁 Resource Reference ${index > 0 ? `#${index + 1}` : ''}
+                    </div>
+                    <div style="font-family: monospace; font-size: 12px; background: #e9ecef; padding: 8px; border-radius: 4px; word-break: break-all;">
+                        ${escapeHtml(uri)}
+                    </div>
+                    ${resource.text ? `<pre style="white-space: pre-wrap; margin: 10px 0 0 0; font-size: 12px;">${escapeHtml(resource.text)}</pre>` : ''}
+                    <button onclick="readResource('${escapeHtml(uri)}')" style="margin-top: 10px; font-size: 12px; padding: 5px 10px;">
+                        📖 Read Full Resource
+                    </button>
+                </div>
+            `;
+        }
+
+        /**
+         * Render UI/embedded content - show HTML source instead of iframe
+         * (MCP Apps need to be loaded via the tool's Load UI button to work properly)
+         */
+        function renderUIContent(content, index) {
+            let htmlContent = '';
+
+            // Extract HTML content from various possible locations
+            if (content.html) {
+                htmlContent = content.html;
+            } else if (content.data && content.mimeType?.includes('html')) {
+                // Base64 encoded HTML
+                try {
+                    htmlContent = atob(content.data);
+                } catch (e) {
+                    htmlContent = content.data;
+                }
+            } else if (content.text && content.mimeType?.includes('html')) {
+                htmlContent = content.text;
+            } else if (typeof content.content === 'string') {
+                htmlContent = content.content;
+            }
+
+            // Check if this is an MCP App resource
+            const isMCPApp = content.mimeType === 'application/vnd.anthropic.resource+html' ||
+                             content.uri?.startsWith('ui://');
+
+            const contentLength = htmlContent.length;
+            const truncatedContent = contentLength > 2000
+                ? htmlContent.substring(0, 2000) + '\n\n... (truncated, ' + contentLength + ' chars total)'
+                : htmlContent;
+
+            return `
+                <div style="margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #17a2b8;">
+                    <div style="font-weight: bold; color: #17a2b8; margin-bottom: 8px;">
+                        🖼️ ${isMCPApp ? 'MCP App UI Resource' : 'HTML Content'} ${index > 0 ? `#${index + 1}` : ''}
+                        ${content.uri ? `<span style="font-weight: normal; font-size: 11px; color: #666; margin-left: 10px;">${escapeHtml(content.uri)}</span>` : ''}
+                    </div>
+                    ${isMCPApp ? `
+                        <div style="background: #d1ecf1; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 13px;">
+                            <strong>ℹ️ MCP App Resource</strong><br>
+                            <span style="font-size: 12px;">This is an interactive UI component. To test it with data, use the <strong>Load UI</strong> button on the associated tool above.</span>
+                        </div>
+                    ` : ''}
+                    <details ${isMCPApp ? '' : 'open'}>
+                        <summary style="cursor: pointer; font-size: 12px; color: #007bff;">View HTML Source (${contentLength} chars)</summary>
+                        <pre style="white-space: pre-wrap; margin: 10px 0 0 0; font-size: 11px; background: #e9ecef; padding: 10px; border-radius: 4px; max-height: 300px; overflow-y: auto;">${escapeHtml(truncatedContent)}</pre>
+                    </details>
+                </div>
+            `;
+        }
+
+        /**
+         * Render prompt messages
+         */
+        function renderPromptMessages(messages, requestPayload, fullResult) {
+            const splitViewId = `split-view-${Date.now()}`;
+
+            let messagesHtml = messages.map((msg, index) => {
+                const role = msg.role || 'unknown';
+                const roleColor = role === 'user' ? '#007bff' : role === 'assistant' ? '#28a745' : '#6c757d';
+
+                let contentHtml = '';
+                if (msg.content) {
+                    if (typeof msg.content === 'string') {
+                        contentHtml = `<pre style="white-space: pre-wrap; margin: 0; font-size: 13px;">${escapeHtml(msg.content)}</pre>`;
+                    } else if (msg.content.type === 'text') {
+                        contentHtml = `<pre style="white-space: pre-wrap; margin: 0; font-size: 13px;">${escapeHtml(msg.content.text)}</pre>`;
+                    } else if (msg.content.type === 'image') {
+                        contentHtml = `<img src="data:${msg.content.mimeType || 'image/png'};base64,${msg.content.data}" style="max-width: 100%; border-radius: 4px;">`;
+                    } else if (msg.content.type === 'resource') {
+                        contentHtml = `<a href="#" onclick="readResource('${escapeHtml(msg.content.resource?.uri || '')}')">${escapeHtml(msg.content.resource?.uri || 'Resource')}</a>`;
+                    }
+                }
+
+                return `
+                    <div style="margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid ${roleColor};">
+                        <div style="font-weight: bold; color: ${roleColor}; margin-bottom: 8px; text-transform: capitalize;">
+                            ${role === 'user' ? '👤' : '🤖'} ${role}
+                        </div>
+                        ${contentHtml}
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="status success" style="margin-top: 10px; padding: 10px; border-radius: 5px;">
+                    <strong>✅ Prompt Retrieved (${messages.length} message${messages.length !== 1 ? 's' : ''})</strong>
+
+                    <div style="margin-top: 10px;">
+                        ${messagesHtml}
+                    </div>
+
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer; font-weight: bold; color: #007bff;">🔧 Technical Details</summary>
+                        <div id="${splitViewId}" style="display: flex; margin-top: 10px; height: 300px;">
+                            <div class="split-panel-left" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                <div style="background: #007bff; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">📤 Request</div>
+                                <pre style="margin: 0; flex: 1; font-size: 11px; overflow-y: auto; background: #f8f9fa; padding: 15px; font-family: monospace; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">${prettyPrintJson(requestPayload)}</pre>
+                            </div>
+                            <div class="split-divider" style="width: 5px; background: #007bff; cursor: col-resize;"></div>
+                            <div class="split-panel-right" style="flex: 1; border: 1px solid #e9ecef; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                                <div style="background: #28a745; color: white; padding: 8px 15px; font-weight: bold; font-size: 13px;">📥 Response</div>
+                                <pre style="margin: 0; flex: 1; font-size: 11px; overflow-y: auto; background: #f8f9fa; padding: 15px; font-family: monospace; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">${prettyPrintJson(fullResult)}</pre>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            `;
         }
 
         // Test if formatting works at all

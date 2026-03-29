@@ -243,6 +243,272 @@ class MCPProtocolValidator {
     }
 
     /**
+     * Validate resources/list response
+     * @param {Object} response - JSON-RPC response
+     * @returns {Object} - Validation result
+     */
+    validateResourcesListResponse(response) {
+        const errors = [];
+        const warnings = [];
+
+        // Validate JSON-RPC 2.0 format
+        const rpcValidation = this.validateJSONRPC(response);
+        errors.push(...rpcValidation.errors);
+        warnings.push(...rpcValidation.warnings);
+
+        if (!response.result) {
+            errors.push('Missing "result" field in resources/list response');
+            return { valid: false, errors, warnings };
+        }
+
+        const result = response.result;
+
+        // Validate resources array
+        if (!result.resources) {
+            errors.push('Missing "resources" array in resources/list result');
+        } else if (!Array.isArray(result.resources)) {
+            errors.push('result.resources must be an array');
+        } else {
+            // Validate each resource
+            result.resources.forEach((resource, index) => {
+                const resourceValidation = this.validateResource(resource, index);
+                errors.push(...resourceValidation.errors);
+                warnings.push(...resourceValidation.warnings);
+            });
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+
+    /**
+     * Validate a single resource definition
+     * @param {Object} resource - Resource definition
+     * @param {number} index - Resource index in array
+     * @returns {Object} - Validation result
+     */
+    validateResource(resource, index) {
+        const errors = [];
+        const warnings = [];
+        const resourceId = resource.name || resource.uri || `resource[${index}]`;
+
+        // Validate uri (required)
+        if (!resource.uri) {
+            errors.push(`${resourceId}: Missing "uri" field (required)`);
+        } else if (typeof resource.uri !== 'string') {
+            errors.push(`${resourceId}: "uri" must be a string`);
+        }
+
+        // Validate name (optional but recommended)
+        if (!resource.name) {
+            warnings.push(`${resourceId}: Missing "name" field (recommended)`);
+        }
+
+        // Validate description (optional)
+        if (resource.description && typeof resource.description !== 'string') {
+            errors.push(`${resourceId}: "description" must be a string`);
+        }
+
+        // Validate mimeType (optional)
+        if (resource.mimeType && typeof resource.mimeType !== 'string') {
+            errors.push(`${resourceId}: "mimeType" must be a string`);
+        }
+
+        return { errors, warnings };
+    }
+
+    /**
+     * Validate prompts/list response
+     * @param {Object} response - JSON-RPC response
+     * @returns {Object} - Validation result
+     */
+    validatePromptsListResponse(response) {
+        const errors = [];
+        const warnings = [];
+
+        // Validate JSON-RPC 2.0 format
+        const rpcValidation = this.validateJSONRPC(response);
+        errors.push(...rpcValidation.errors);
+        warnings.push(...rpcValidation.warnings);
+
+        if (!response.result) {
+            errors.push('Missing "result" field in prompts/list response');
+            return { valid: false, errors, warnings };
+        }
+
+        const result = response.result;
+
+        // Validate prompts array
+        if (!result.prompts) {
+            errors.push('Missing "prompts" array in prompts/list result');
+        } else if (!Array.isArray(result.prompts)) {
+            errors.push('result.prompts must be an array');
+        } else {
+            // Validate each prompt
+            result.prompts.forEach((prompt, index) => {
+                const promptValidation = this.validatePrompt(prompt, index);
+                errors.push(...promptValidation.errors);
+                warnings.push(...promptValidation.warnings);
+            });
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+
+    /**
+     * Validate a single prompt definition
+     * @param {Object} prompt - Prompt definition
+     * @param {number} index - Prompt index in array
+     * @returns {Object} - Validation result
+     */
+    validatePrompt(prompt, index) {
+        const errors = [];
+        const warnings = [];
+        const promptId = prompt.name || `prompt[${index}]`;
+
+        // Validate name (required)
+        if (!prompt.name) {
+            errors.push(`${promptId}: Missing "name" field (required)`);
+        } else if (typeof prompt.name !== 'string') {
+            errors.push(`${promptId}: "name" must be a string`);
+        }
+
+        // Validate description (optional but recommended)
+        if (!prompt.description) {
+            warnings.push(`${promptId}: Missing "description" (recommended)`);
+        }
+
+        // Validate arguments (optional)
+        if (prompt.arguments) {
+            if (!Array.isArray(prompt.arguments)) {
+                errors.push(`${promptId}: "arguments" must be an array`);
+            } else {
+                prompt.arguments.forEach((arg, argIndex) => {
+                    const argValidation = this.validatePromptArgument(arg, promptId, argIndex);
+                    errors.push(...argValidation.errors);
+                    warnings.push(...argValidation.warnings);
+                });
+            }
+        }
+
+        return { errors, warnings };
+    }
+
+    /**
+     * Validate a prompt argument definition
+     * @param {Object} arg - Argument definition
+     * @param {string} promptId - Parent prompt identifier
+     * @param {number} index - Argument index
+     * @returns {Object} - Validation result
+     */
+    validatePromptArgument(arg, promptId, index) {
+        const errors = [];
+        const warnings = [];
+        const argId = `${promptId}.arguments[${index}]`;
+
+        // Validate name (required)
+        if (!arg.name) {
+            errors.push(`${argId}: Missing "name" field (required)`);
+        } else if (typeof arg.name !== 'string') {
+            errors.push(`${argId}: "name" must be a string`);
+        }
+
+        // Validate description (optional but recommended)
+        if (!arg.description) {
+            warnings.push(`${argId}: Missing "description" (recommended)`);
+        }
+
+        // Validate required (optional, boolean)
+        if ('required' in arg && typeof arg.required !== 'boolean') {
+            errors.push(`${argId}: "required" must be a boolean`);
+        }
+
+        return { errors, warnings };
+    }
+
+    /**
+     * Validate MCP content array (used in tool results and resource contents)
+     * @param {Array} contents - Content array
+     * @returns {Object} - Validation result
+     */
+    validateContentArray(contents) {
+        const errors = [];
+        const warnings = [];
+
+        if (!Array.isArray(contents)) {
+            errors.push('Content must be an array');
+            return { valid: false, errors, warnings };
+        }
+
+        contents.forEach((content, index) => {
+            const contentValidation = this.validateContentItem(content, index);
+            errors.push(...contentValidation.errors);
+            warnings.push(...contentValidation.warnings);
+        });
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+
+    /**
+     * Validate a single content item
+     * @param {Object} content - Content item
+     * @param {number} index - Content index
+     * @returns {Object} - Validation result
+     */
+    validateContentItem(content, index) {
+        const errors = [];
+        const warnings = [];
+        const contentId = `content[${index}]`;
+
+        if (!content.type) {
+            errors.push(`${contentId}: Missing "type" field`);
+            return { errors, warnings };
+        }
+
+        switch (content.type) {
+            case 'text':
+                if (!content.text && content.text !== '') {
+                    errors.push(`${contentId}: Text content must have "text" field`);
+                }
+                break;
+            case 'image':
+                if (!content.data && !content.uri && !content.url) {
+                    errors.push(`${contentId}: Image content must have "data", "uri", or "url" field`);
+                }
+                if (content.data && !content.mimeType) {
+                    warnings.push(`${contentId}: Image with data should have "mimeType" field`);
+                }
+                break;
+            case 'resource':
+                if (!content.resource && !content.uri) {
+                    errors.push(`${contentId}: Resource content must have "resource" or "uri" field`);
+                }
+                break;
+            case 'ui':
+            case 'embedded':
+                if (!content.html && !content.data && !content.content) {
+                    warnings.push(`${contentId}: UI content should have "html", "data", or "content" field`);
+                }
+                break;
+            default:
+                warnings.push(`${contentId}: Unknown content type "${content.type}"`);
+        }
+
+        return { errors, warnings };
+    }
+
+    /**
      * Validate JSON-RPC 2.0 message format
      * @param {Object} message - JSON-RPC message
      * @returns {Object} - Validation result

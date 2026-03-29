@@ -5,21 +5,39 @@
  * Convention: Most legacy MCP servers using SSE have '/sse' in their URL
  */
 class SSEMCPClient {
-    constructor(serverUrl, serverName) {
+    constructor(serverUrl, serverName, customHeaders = {}) {
         this.serverUrl = serverUrl;
         this.serverName = serverName;
+        this.customHeaders = customHeaders;
         this.eventSource = null;
         this.connected = false;
         this.tools = [];
         this.messageId = 1;
         this.pendingRequests = new Map(); // Track request/response pairs
-        
+
         // Event callbacks
         this.onConnected = null;
         this.onDisconnected = null;
         this.onToolsReceived = null;
         this.onError = null;
         this.onMessage = null;
+    }
+
+    /**
+     * Apply custom headers to a headers object
+     * @param {Object} headers - Base headers object
+     * @returns {Object} - Headers with custom headers applied
+     */
+    applyCustomHeaders(headers) {
+        if (!this.customHeaders || typeof this.customHeaders !== 'object') {
+            return headers;
+        }
+        for (const [key, value] of Object.entries(this.customHeaders)) {
+            if (key.toLowerCase() !== 'content-type') {
+                headers[key] = value;
+            }
+        }
+        return headers;
     }
 
     /**
@@ -63,16 +81,25 @@ class SSEMCPClient {
      */
     async initializeSession() {
         console.log(`🚀 Initializing MCP session...`);
-        
-        // SSE MCP servers commonly use /mcp endpoint for client requests  
+
+        // SSE MCP servers commonly use /mcp endpoint for client requests
         const messageEndpoint = this.serverUrl.replace('/sse', '/mcp');
-        
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/event-stream'
+        };
+        this.applyCustomHeaders(headers);
+
+        // Log request details
+        if (Object.keys(this.customHeaders).length > 0) {
+            console.log(`📡 POST ${messageEndpoint} [initialize]`);
+            console.log(`   Headers:`, JSON.stringify(headers, null, 2));
+        }
+
         const response = await fetch(messageEndpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json, text/event-stream'
-            },
+            headers: headers,
             body: JSON.stringify({
                 jsonrpc: "2.0",
                 id: 1,
@@ -242,14 +269,21 @@ class SSEMCPClient {
      */
     async sendMessage(message) {
         const messageEndpoint = this.serverUrl.replace('/sse', '/mcp');
-        
+
         try {
             console.log(`📤 Sending message to ${messageEndpoint}:`, message);
-            
+
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json, text/event-stream'
             };
+            this.applyCustomHeaders(headers);
+
+            // Log request details when custom headers are used
+            if (Object.keys(this.customHeaders).length > 0) {
+                console.log(`📡 POST ${messageEndpoint} [${message.method || 'unknown'}]`);
+                console.log(`   Headers:`, JSON.stringify(headers, null, 2));
+            }
 
             // Note: Can't send Mcp-Session-Id header due to browser CORS restrictions
             // The server may not require it for browser-based clients
@@ -294,17 +328,26 @@ class SSEMCPClient {
         }
 
         console.log(`🛠️ Requesting tools list from MCP server...`);
-        
+
         const messageEndpoint = this.serverUrl.replace('/sse', '/mcp');
-        
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/event-stream'
+            // Note: Can't send Mcp-Session-Id due to browser CORS restrictions
+        };
+        this.applyCustomHeaders(headers);
+
+        // Log request details when custom headers are used
+        if (Object.keys(this.customHeaders).length > 0) {
+            console.log(`📡 POST ${messageEndpoint} [tools/list]`);
+            console.log(`   Headers:`, JSON.stringify(headers, null, 2));
+        }
+
         try {
             const response = await fetch(messageEndpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json, text/event-stream'
-                    // Note: Can't send Mcp-Session-Id due to browser CORS restrictions
-                },
+                headers: headers,
                 body: JSON.stringify({
                     jsonrpc: "2.0",
                     id: this.getNextId(),

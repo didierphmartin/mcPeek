@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCPeek Documentation - MCP Protocol Testing Tool</title>
+    <link rel="icon" type="image/svg+xml" href="mcpeek-icon.svg">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4F46E5;
+        }
+
+        header img {
+            width: 60px;
+            height: 60px;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #4F46E5;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #4F46E5;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #3730A3;
+        }
+
+        h2 {
+            color: #4F46E5;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            color: #333;
+            margin-top: 25px;
+        }
+
+        .toc {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin: 20px 0 30px 0;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            color: #4F46E5;
+        }
+
+        .toc ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .feature-box {
+            background: #f8f9fa;
+            border-left: 4px solid #4F46E5;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .feature-box h4 {
+            margin: 0 0 10px 0;
+            color: #4F46E5;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+        }
+
+        pre {
+            background: #1a1a2e;
+            color: #10B981;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #4F46E5;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .step-number {
+            background: #4F46E5;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h4 {
+            margin: 0 0 5px 0;
+        }
+
+        ul li {
+            margin: 8px 0;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">
+            <span>&larr;</span> Back to MCPeek
+        </a>
+
+        <header>
+            <img src="mcpeek-icon.svg" alt="MCPeek Icon">
+            <div>
+                <h1>MCPeek Documentation</h1>
+                <p>Peek into MCP Protocol Compliance</p>
+            </div>
+        </header>
+
+        <p>MCPeek is a browser-based tool for testing and debugging MCP (Model Context Protocol) servers. It provides full protocol validation, tool testing, and comprehensive logging to help you ensure your MCP server implementations are compliant and working correctly.</p>
+
+        <nav class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#adding-servers">Adding MCP Servers</a></li>
+                <li><a href="#custom-headers">Using Custom Headers</a></li>
+                <li><a href="#connecting">Connecting to Servers</a></li>
+                <li><a href="#server-info">Server Information</a></li>
+                <li><a href="#protocol-validation">Protocol Validation</a></li>
+                <li><a href="#testing-tools">Testing Tools</a></li>
+                <li><a href="#resources-prompts">Resources & Prompts</a></li>
+                <li><a href="#activity-log">Activity Log</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#mcp-protocol">About MCP Protocol</a></li>
+            </ul>
+        </nav>
+
+        <h2 id="getting-started">Getting Started</h2>
+        <p>MCPeek allows you to test any MCP server that supports HTTP/SSE transport. Here's a quick overview of the testing workflow:</p>
+
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Add Your MCP Server</h4>
+                <p>Configure your MCP server by providing its URL and any required authentication headers.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Connect to the Server</h4>
+                <p>MCPeek will perform the MCP handshake (initialize, notifications/initialized) and retrieve available tools.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Test Tools & Validate</h4>
+                <p>Execute tools, view responses, and check protocol compliance through the validation panel.</p>
+            </div>
+        </div>
+
+        <h2 id="adding-servers">Adding MCP Servers</h2>
+        <p>To add a custom MCP server to MCPeek:</p>
+
+        <ol>
+            <li>Click on <strong>"+ Add Custom MCP Server"</strong> to expand the form.</li>
+            <li>Fill in the server details:
+                <ul>
+                    <li><strong>Server Name:</strong> A friendly name for the server (e.g., "My Production Server")</li>
+                    <li><strong>Server URL:</strong> The full URL to the MCP endpoint (e.g., <code>https://api.example.com/mcp</code>)</li>
+                    <li><strong>Description:</strong> Optional description for your reference</li>
+                </ul>
+            </li>
+            <li>Click <strong>"+ Add Server"</strong> to save.</li>
+        </ol>
+
+        <div class="info-box">
+            <strong>Note:</strong> Custom servers are saved in your browser's localStorage and will persist across sessions.
+        </div>
+
+        <h3>Managing Servers</h3>
+        <p>Click on <strong>"List MCP Servers"</strong> to view, edit, or delete your configured servers. Each server entry shows:</p>
+        <ul>
+            <li>Server name and URL</li>
+            <li>Number of custom headers configured</li>
+            <li>Edit and Delete buttons</li>
+        </ul>
+
+        <h2 id="custom-headers">Using Custom Headers</h2>
+        <p>Many MCP servers require authentication or custom headers. MCPeek supports adding custom HTTP headers to all requests sent to a server.</p>
+
+        <h3>Adding Headers</h3>
+        <p>In the "Add Custom MCP Server" form, use the <strong>Custom Headers</strong> textarea to specify headers as a JSON object:</p>
+
+        <pre><code>{
+    "X-API-Key": "your-api-key-here",
+    "Authorization": "Bearer your-token-here"
+}</code></pre>
+
+        <h3>Common Header Examples</h3>
+        <table>
+            <tr>
+                <th>Use Case</th>
+                <th>Header Configuration</th>
+            </tr>
+            <tr>
+                <td>API Key Authentication</td>
+                <td><code>{"X-API-Key": "abc123"}</code></td>
+            </tr>
+            <tr>
+                <td>Bearer Token</td>
+                <td><code>{"Authorization": "Bearer eyJ..."}</code></td>
+            </tr>
+            <tr>
+                <td>Basic Auth</td>
+                <td><code>{"Authorization": "Basic dXNlcjpwYXNz"}</code></td>
+            </tr>
+            <tr>
+                <td>Multiple Headers</td>
+                <td><code>{"X-API-Key": "key", "X-Tenant-ID": "tenant1"}</code></td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <strong>Security Note:</strong> Custom headers are stored in your browser's localStorage. Avoid using MCPeek on shared computers with sensitive API keys.
+        </div>
+
+        <h2 id="connecting">Connecting to Servers</h2>
+        <p>After selecting a server from the dropdown, click <strong>"Connect"</strong> to initiate the MCP handshake.</p>
+
+        <h3>Connection Process</h3>
+        <p>MCPeek performs the following steps automatically:</p>
+        <ol>
+            <li><strong>Initialize:</strong> Sends the <code>initialize</code> request with client capabilities</li>
+            <li><strong>Notification:</strong> Sends <code>notifications/initialized</code> to complete the handshake</li>
+            <li><strong>List Tools:</strong> Retrieves available tools via <code>tools/list</code></li>
+            <li><strong>List Resources:</strong> If supported, retrieves resources via <code>resources/list</code></li>
+            <li><strong>List Prompts:</strong> If supported, retrieves prompts via <code>prompts/list</code></li>
+        </ol>
+
+        <h3>Connection Buttons</h3>
+        <table>
+            <tr>
+                <th>Button</th>
+                <th>Function</th>
+            </tr>
+            <tr>
+                <td><strong>Connect</strong></td>
+                <td>Initiates connection to the selected server</td>
+            </tr>
+            <tr>
+                <td><strong>Refresh Token</strong></td>
+                <td>Refreshes OAuth token (for OAuth-enabled servers)</td>
+            </tr>
+            <tr>
+                <td><strong>Disconnect</strong></td>
+                <td>Disconnects from the current server</td>
+            </tr>
+            <tr>
+                <td><strong>Reset</strong></td>
+                <td>Clears all logs and resets the session</td>
+            </tr>
+        </table>
+
+        <h2 id="server-info">Server Information</h2>
+        <p>Once connected, the <strong>Server Information</strong> section displays details about the MCP server:</p>
+        <ul>
+            <li><strong>Server Name:</strong> The name reported by the server</li>
+            <li><strong>Version:</strong> Server version number</li>
+            <li><strong>Protocol Version:</strong> The MCP protocol version supported</li>
+            <li><strong>Capabilities:</strong> Features the server supports (tools, resources, prompts, etc.)</li>
+        </ul>
+
+        <div class="feature-box">
+            <h4>Capability Details</h4>
+            <p>Click "Capability Details" to view the full JSON structure of the server's capabilities.</p>
+        </div>
+
+        <h2 id="protocol-validation">Protocol Validation</h2>
+        <p>MCPeek validates all MCP protocol messages against the specification. The <strong>Protocol Validation</strong> section shows:</p>
+
+        <ul>
+            <li><strong>Initialize Response:</strong> Validates server info, protocol version, and capabilities</li>
+            <li><strong>Tools List Response:</strong> Validates tool definitions and schemas</li>
+            <li><strong>Resources List Response:</strong> Validates resource definitions</li>
+            <li><strong>Tool Call Responses:</strong> Validates tool execution results</li>
+        </ul>
+
+        <h3>Validation Status</h3>
+        <div class="success-box">
+            <strong>Valid:</strong> The response conforms to MCP protocol specification
+        </div>
+        <div class="warning-box">
+            <strong>Warnings:</strong> Minor issues that don't break functionality but should be addressed
+        </div>
+        <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px 20px; margin: 15px 0; border-radius: 0 8px 8px 0;">
+            <strong>Invalid:</strong> The response has protocol violations that may cause compatibility issues
+        </div>
+
+        <h2 id="testing-tools">Testing Tools</h2>
+        <p>The <strong>Available Tools</strong> section lists all tools exposed by the connected MCP server.</p>
+
+        <h3>Tool Cards</h3>
+        <p>Each tool is displayed as a card showing:</p>
+        <ul>
+            <li><strong>Tool Name:</strong> The identifier used to call the tool</li>
+            <li><strong>Description:</strong> What the tool does</li>
+            <li><strong>Input Fields:</strong> Parameters the tool accepts (required fields marked with *)</li>
+            <li><strong>Execute Button:</strong> Runs the tool with the provided inputs</li>
+        </ul>
+
+        <h3>Executing Tools</h3>
+        <ol>
+            <li>Find the tool you want to test</li>
+            <li>Fill in the required input parameters</li>
+            <li>Click <strong>"Execute [tool-name]"</strong></li>
+            <li>View the response in the tool card</li>
+        </ol>
+
+        <h3>Tool Responses</h3>
+        <p>After executing a tool, the response is displayed with:</p>
+        <ul>
+            <li><strong>Formatted Data:</strong> If the response contains structured data, it's displayed in a readable format</li>
+            <li><strong>Content Retrieved:</strong> Collapsible section showing the raw content array from the response</li>
+            <li><strong>Raw Response:</strong> The complete JSON-RPC response for debugging</li>
+        </ul>
+
+        <h2 id="resources-prompts">Resources & Prompts</h2>
+        <p>If the MCP server supports resources or prompts, additional sections will appear:</p>
+
+        <h3>Resources</h3>
+        <p>MCP resources are data sources the server can provide. The Resources section shows:</p>
+        <ul>
+            <li>Resource URI</li>
+            <li>Resource name and description</li>
+            <li>MIME type</li>
+            <li>Read button to fetch the resource content</li>
+        </ul>
+
+        <h3>Prompts</h3>
+        <p>MCP prompts are predefined prompt templates. The Prompts section shows:</p>
+        <ul>
+            <li>Prompt name</li>
+            <li>Description</li>
+            <li>Required arguments</li>
+            <li>Execute button to run the prompt</li>
+        </ul>
+
+        <h2 id="activity-log">Activity Log</h2>
+        <p>The <strong>Activity Log</strong> at the bottom of the page shows a detailed timeline of all operations:</p>
+
+        <ul>
+            <li><strong>Connection events:</strong> Initialize, handshake completion</li>
+            <li><strong>Request/Response logging:</strong> All MCP method calls</li>
+            <li><strong>Header logging:</strong> When custom headers are used, the URL and headers are logged</li>
+            <li><strong>Errors:</strong> Any errors that occur during testing</li>
+            <li><strong>Validation results:</strong> Protocol compliance checks</li>
+        </ul>
+
+        <div class="info-box">
+            <strong>Tip:</strong> The activity log is invaluable for debugging connection issues. Check it first when something doesn't work as expected.
+        </div>
+
+        <h2 id="troubleshooting">Troubleshooting</h2>
+
+        <h3>Connection Failed</h3>
+        <div class="feature-box">
+            <h4>CORS Errors</h4>
+            <p>If you see CORS errors in the browser console, the MCP server needs to allow cross-origin requests. The server must include these headers:</p>
+            <pre><code>Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key</code></pre>
+        </div>
+
+        <h3>Authentication Errors</h3>
+        <div class="feature-box">
+            <h4>401 Unauthorized</h4>
+            <p>Check that your custom headers include the correct authentication credentials. Verify the header name and value format match what the server expects.</p>
+        </div>
+
+        <h3>Tools Not Loading</h3>
+        <div class="feature-box">
+            <h4>Empty Tools List</h4>
+            <p>If no tools appear after connecting:</p>
+            <ul>
+                <li>Check the Activity Log for errors</li>
+                <li>Verify the server implements <code>tools/list</code></li>
+                <li>Check Protocol Validation for response issues</li>
+            </ul>
+        </div>
+
+        <h3>SSE Servers</h3>
+        <div class="feature-box">
+            <h4>Server-Sent Events</h4>
+            <p>MCPeek supports SSE transport for servers that use it. SSE servers are typically identified by URLs containing <code>/sse</code>. Note that browser-based SSE has CORS limitations.</p>
+        </div>
+
+        <h2 id="mcp-protocol">About MCP Protocol</h2>
+        <p>The Model Context Protocol (MCP) is a standardized protocol for communication between AI applications and tool providers. Key concepts:</p>
+
+        <table>
+            <tr>
+                <th>Concept</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><strong>Tools</strong></td>
+                <td>Functions that can be called by AI models to perform actions</td>
+            </tr>
+            <tr>
+                <td><strong>Resources</strong></td>
+                <td>Data sources that can be read by AI models</td>
+            </tr>
+            <tr>
+                <td><strong>Prompts</strong></td>
+                <td>Predefined prompt templates with variable substitution</td>
+            </tr>
+            <tr>
+                <td><strong>Capabilities</strong></td>
+                <td>Features a client or server supports</td>
+            </tr>
+        </table>
+
+        <h3>Protocol Version</h3>
+        <p>MCPeek uses protocol version <code>2024-11-05</code> for the handshake.</p>
+
+        <h3>JSON-RPC</h3>
+        <p>MCP uses JSON-RPC 2.0 for message formatting. Each request has:</p>
+        <ul>
+            <li><code>jsonrpc</code>: Always "2.0"</li>
+            <li><code>id</code>: Request identifier</li>
+            <li><code>method</code>: The MCP method to call</li>
+            <li><code>params</code>: Method parameters</li>
+        </ul>
+
+        <footer>
+            <p>MCPeek - MCP Protocol Testing Tool</p>
+            <p>For more information about MCP, visit the official documentation.</p>
+        </footer>
+    </div>
+</body>
+</html>
