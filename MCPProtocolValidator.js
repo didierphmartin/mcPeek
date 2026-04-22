@@ -1,21 +1,109 @@
 /**
  * MCP Protocol Validator
- * Validates MCP JSON-RPC 2.0 messages for protocol compliance
+ * Validates MCP JSON-RPC 2.0 messages for protocol compliance across
+ * all published MCP spec revisions.
  *
  * Created by Claude Code (Anthropic)
- * Protocol Specification: MCP 2024-11-05
+ * Supported specs: 2024-11-05, 2025-03-26, 2025-06-18, 2025-11-25
  */
 
 class MCPProtocolValidator {
-    constructor() {
-        this.protocolVersion = '2024-11-05';
+    // Ordered oldest → newest. Index = comparable rank.
+    static SUPPORTED_VERSIONS = [
+        '2024-11-05',
+        '2025-03-26',
+        '2025-06-18',
+        '2025-11-25'
+    ];
+    static LATEST_VERSION = '2025-11-25';
+
+    constructor(preferredVersion = MCPProtocolValidator.LATEST_VERSION) {
+        this.preferredVersion = preferredVersion;
+        // Populated from the server's initialize response
+        this.negotiatedVersion = null;
         this.validationLog = [];
     }
 
+    // Accessor used by legacy callers that expect `.protocolVersion`.
+    // Returns the negotiated version if known, otherwise what the client prefers.
+    get protocolVersion() {
+        return this.negotiatedVersion || this.preferredVersion;
+    }
+
+    /** Is the given spec date one we recognize? */
+    isKnownVersion(version) {
+        return MCPProtocolValidator.SUPPORTED_VERSIONS.includes(version);
+    }
+
+    /** Compare two spec dates: -1 if a<b, 0 if equal, 1 if a>b, NaN if unknown. */
+    compareVersions(a, b) {
+        const ia = MCPProtocolValidator.SUPPORTED_VERSIONS.indexOf(a);
+        const ib = MCPProtocolValidator.SUPPORTED_VERSIONS.indexOf(b);
+        if (ia < 0 || ib < 0) return NaN;
+        return Math.sign(ia - ib);
+    }
+
+    /** True if `version` is >= `minimum` (both must be known). */
+    versionAtLeast(version, minimum) {
+        const c = this.compareVersions(version, minimum);
+        return !Number.isNaN(c) && c >= 0;
+    }
+
     /**
-     * Validate initialize response
-     * @param {Object} response - JSON-RPC response
-     * @returns {Object} - Validation result {valid: boolean, errors: array, warnings: array}
+     * Mandatory wire-observable requirements introduced at each spec revision.
+     * Cumulative: an entry applies from `since` onward until explicitly superseded.
+     * Sourced from the official MCP changelogs.
+     */
+    getVersionRequirements(version) {
+        const reqs = [
+            // ── 2024-11-05 baseline ──────────────────────────────────────
+            { since: '2024-11-05', id: 'jsonrpc-2.0',
+              text: 'Every message MUST use "jsonrpc": "2.0".' },
+            { since: '2024-11-05', id: 'init-first',
+              text: 'Initialize MUST be the first client→server interaction.' },
+            { since: '2024-11-05', id: 'init-req-fields',
+              text: 'initialize request MUST carry protocolVersion, capabilities, clientInfo.' },
+            { since: '2024-11-05', id: 'init-res-fields',
+              text: 'initialize response MUST carry protocolVersion, capabilities, serverInfo.' },
+            { since: '2024-11-05', id: 'initialized-notif',
+              text: 'Client MUST send notifications/initialized after a successful initialize.' },
+            { since: '2024-11-05', id: 'capabilities-shape',
+              text: 'capabilities.{tools,resources,prompts} MUST be objects, never arrays.' },
+            { since: '2024-11-05', id: 'version-negotiation',
+              text: 'If server cannot honor requested protocolVersion it MUST reply with one it supports.' },
+
+            // ── 2025-03-26 ──────────────────────────────────────────────
+            { since: '2025-03-26', id: 'oauth-2.1',
+              text: 'Authorization (when used) MUST follow the OAuth 2.1 framework.' },
+            { since: '2025-03-26', id: 'streamable-http',
+              text: 'Streamable HTTP transport replaces the legacy HTTP+SSE transport.' },
+
+            // ── 2025-06-18 ──────────────────────────────────────────────
+            { since: '2025-06-18', id: 'mcp-protocol-version-header',
+              text: 'Client MUST send MCP-Protocol-Version header with the negotiated version on every post-initialize HTTP request.' },
+            { since: '2025-06-18', id: 'no-batching',
+              text: 'JSON-RPC batching is REMOVED — MUST NOT send arrays of requests.' },
+            { since: '2025-06-18', id: 'resource-indicators',
+              text: 'OAuth clients MUST implement Resource Indicators (RFC 8707).' },
+            { since: '2025-06-18', id: 'lifecycle-must',
+              text: 'Operation-phase capability respect strengthened from SHOULD to MUST.' },
+
+            // ── 2025-11-25 ──────────────────────────────────────────────
+            { since: '2025-11-25', id: 'oidc-discovery',
+              text: 'Authorization-server discovery MUST support OpenID Connect Discovery 1.0.' },
+            { since: '2025-11-25', id: 'origin-403',
+              text: 'Servers MUST return HTTP 403 for invalid Origin headers on Streamable HTTP.' },
+            { since: '2025-11-25', id: 'incremental-consent',
+              text: 'Step-up auth via WWW-Authenticate with insufficient_scope supported.' }
+        ];
+        if (!this.isKnownVersion(version)) return reqs;
+        return reqs.filter(r => this.versionAtLeast(version, r.since));
+    }
+
+    /**
+     * Validate initialize response.
+     * Accepts any version in SUPPORTED_VERSIONS; captures the negotiated version
+     * so later calls (e.g. MCP-Protocol-Version headers) can reuse it.
      */
     validateInitializeResponse(response) {
         const errors = [];
@@ -33,11 +121,17 @@ class MCPProtocolValidator {
 
         const result = response.result;
 
-        // Validate protocolVersion
+        // Validate protocolVersion — accept any known spec revision
         if (!result.protocolVersion) {
             errors.push('Missing "protocolVersion" in initialize result');
-        } else if (result.protocolVersion !== this.protocolVersion) {
-            warnings.push(`Protocol version mismatch: expected "${this.protocolVersion}", got "${result.protocolVersion}"`);
+        } else if (!this.isKnownVersion(result.protocolVersion)) {
+            warnings.push(`Unknown protocol version "${result.protocolVersion}". Known: ${MCPProtocolValidator.SUPPORTED_VERSIONS.join(', ')}`);
+            this.negotiatedVersion = result.protocolVersion; // still record it
+        } else {
+            this.negotiatedVersion = result.protocolVersion;
+            if (result.protocolVersion !== this.preferredVersion) {
+                warnings.push(`Negotiated protocol version "${result.protocolVersion}" differs from client preferred "${this.preferredVersion}" — both are supported, continuing.`);
+            }
         }
 
         // Validate capabilities
@@ -49,23 +143,54 @@ class MCPProtocolValidator {
             warnings.push(...capValidation.warnings);
         }
 
-        // Validate serverInfo
+        // Validate serverInfo (per 2024-11-05 lifecycle, server MUST include it)
         if (!result.serverInfo) {
-            warnings.push('Missing "serverInfo" in initialize result (recommended but not required)');
+            errors.push('Missing "serverInfo" in initialize result (required by MCP lifecycle)');
         } else {
             if (!result.serverInfo.name) {
-                warnings.push('Missing "serverInfo.name" (recommended)');
+                errors.push('Missing "serverInfo.name"');
             }
             if (!result.serverInfo.version) {
-                warnings.push('Missing "serverInfo.version" (recommended)');
+                errors.push('Missing "serverInfo.version"');
             }
         }
 
         return {
             valid: errors.length === 0,
             errors,
-            warnings
+            warnings,
+            negotiatedVersion: this.negotiatedVersion,
+            mandatoryChecklist: this.buildMandatoryChecklist(this.negotiatedVersion, result)
         };
+    }
+
+    /**
+     * Build a pass/fail checklist of mandatory items for the negotiated version,
+     * evaluating the ones we can actually observe on this initialize result.
+     */
+    buildMandatoryChecklist(version, initResult) {
+        if (!version) return [];
+        const reqs = this.getVersionRequirements(version);
+        return reqs.map(r => {
+            let status = 'info'; // 'pass' | 'fail' | 'info' (can't verify here)
+            switch (r.id) {
+                case 'init-res-fields': {
+                    const ok = !!(initResult && initResult.protocolVersion && initResult.capabilities && initResult.serverInfo);
+                    status = ok ? 'pass' : 'fail';
+                    break;
+                }
+                case 'capabilities-shape': {
+                    const caps = initResult && initResult.capabilities;
+                    const bad = caps && ['tools','resources','prompts'].some(k => Array.isArray(caps[k]));
+                    status = caps ? (bad ? 'fail' : 'pass') : 'info';
+                    break;
+                }
+                case 'jsonrpc-2.0':
+                    status = 'pass'; // validated at message level above
+                    break;
+            }
+            return { ...r, status };
+        });
     }
 
     /**
@@ -624,6 +749,27 @@ class MCPProtocolValidator {
                         ${validation.warnings.map(warn => `<li style="margin: 5px 0; color: #856404;">${this.escapeHtml(warn)}</li>`).join('')}
                     </ul>
                 </div>
+            `;
+        }
+
+        // Show per-version mandatory checklist (only emitted for initialize validation)
+        if (validation.mandatoryChecklist && validation.mandatoryChecklist.length > 0) {
+            const negotiated = validation.negotiatedVersion || 'unknown';
+            const icon = { pass: '✅', fail: '❌', info: '•' };
+            const color = { pass: '#155724', fail: '#721c24', info: '#555' };
+            html += `
+                <details style="margin-top: 10px;">
+                    <summary style="cursor: pointer; color: #4F46E5; font-weight: bold;">
+                        Mandatory requirements for MCP ${this.escapeHtml(negotiated)} (${validation.mandatoryChecklist.length})
+                    </summary>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; list-style: none;">
+                        ${validation.mandatoryChecklist.map(r => `
+                            <li style="margin: 4px 0; color: ${color[r.status]};">
+                                ${icon[r.status]} <code style="font-size: 11px;">since ${this.escapeHtml(r.since)}</code> — ${this.escapeHtml(r.text)}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </details>
             `;
         }
 

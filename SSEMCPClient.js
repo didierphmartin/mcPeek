@@ -105,7 +105,7 @@ class SSEMCPClient {
                 id: 1,
                 method: "initialize",
                 params: {
-                    protocolVersion: "2024-11-05",
+                    protocolVersion: (typeof MCPProtocolValidator !== 'undefined' && MCPProtocolValidator.LATEST_VERSION) || "2025-11-25",
                     capabilities: { tools: {} },
                     clientInfo: {
                         name: "Browser-MCP-Client",
@@ -205,7 +205,7 @@ class SSEMCPClient {
             id: this.getNextId(),
             method: "initialize",
             params: {
-                protocolVersion: "2024-11-05",
+                protocolVersion: (typeof MCPProtocolValidator !== 'undefined' && MCPProtocolValidator.LATEST_VERSION) || "2025-11-25",
                 capabilities: {
                     tools: {}
                 },

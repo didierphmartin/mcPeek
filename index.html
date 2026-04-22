@@ -361,6 +361,10 @@
         let isConnected = false;
         let sseClient = null; // SSE MCP client instance
         let mcpValidator = new MCPProtocolValidator(); // Protocol validator
+        // Protocol version advertised on the wire. Starts at the client's preferred
+        // (latest) version; after initialize it switches to whatever the server negotiated.
+        // Required for the MCP-Protocol-Version header (mandatory since 2025-06-18).
+        let currentProtocolVersion = MCPProtocolValidator.LATEST_VERSION;
         let oauthClients = {}; // OAuth clients for each server
 
         let servers = {};
@@ -911,6 +915,10 @@
             // Store server info and capabilities for later use
             currentServerInfo = initResult.result?.serverInfo || null;
             serverCapabilities = initResult.result?.capabilities || {};
+            // Adopt the negotiated protocol version for all subsequent requests
+            // (MCP-Protocol-Version header is mandatory from 2025-06-18 onward).
+            currentProtocolVersion = mcpValidator.negotiatedVersion || currentProtocolVersion;
+            log(`🔖 Negotiated MCP protocol: ${currentProtocolVersion}`);
             log(`📋 Server capabilities: ${Object.keys(serverCapabilities).join(', ') || 'none'}`);
 
             // Step 2: Send notifications/initialized
@@ -1049,7 +1057,7 @@
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json, text/event-stream, */*',
-                'mcp-protocol-version': '2024-11-05'
+                'mcp-protocol-version': currentProtocolVersion
             };
 
             if (accessToken) {
@@ -1085,11 +1093,11 @@
                     id: 1,
                     method: 'initialize',
                     params: {
-                        protocolVersion: '2024-11-05',
+                        protocolVersion: MCPProtocolValidator.LATEST_VERSION,
                         capabilities: { tools: {} },
                         clientInfo: {
                             name: 'MCPeek',
-                            version: '2.0.0'
+                            version: '2.1.0'
                         }
                     }
                 };
@@ -1099,7 +1107,7 @@
                 const headers = {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json, text/event-stream, */*',
-                    'mcp-protocol-version': '2024-11-05'  // MCP protocol header
+                    'mcp-protocol-version': MCPProtocolValidator.LATEST_VERSION  // initial advertise; negotiation updates currentProtocolVersion for later calls
                 };
 
                 // Add OAuth token if available
@@ -1251,6 +1259,10 @@
                 // Store server info and capabilities for later use
                 currentServerInfo = initResult.result?.serverInfo || null;
                 serverCapabilities = initResult.result?.capabilities || {};
+                // Adopt the negotiated protocol version for all subsequent requests
+                // (MCP-Protocol-Version header is mandatory from 2025-06-18 onward).
+                currentProtocolVersion = mcpValidator.negotiatedVersion || currentProtocolVersion;
+                log(`🔖 Negotiated MCP protocol: ${currentProtocolVersion}`);
                 log(`📋 Server capabilities: ${Object.keys(serverCapabilities).join(', ') || 'none'}`);
 
                 // Step 2: Send notifications/initialized (MCP protocol requirement)
@@ -1267,7 +1279,7 @@
                 const notifHeaders = {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json, text/event-stream, */*',
-                    'mcp-protocol-version': '2024-11-05'
+                    'mcp-protocol-version': currentProtocolVersion
                 };
                 if (accessToken) {
                     notifHeaders['Authorization'] = `Bearer ${accessToken}`;
@@ -1295,7 +1307,7 @@
                 const toolsHeaders = {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json, text/event-stream, */*',
-                    'mcp-protocol-version': '2024-11-05'
+                    'mcp-protocol-version': currentProtocolVersion
                 };
                 if (accessToken) {
                     toolsHeaders['Authorization'] = `Bearer ${accessToken}`;
@@ -1457,7 +1469,7 @@
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json, text/event-stream, */*',
-                'mcp-protocol-version': '2024-11-05'
+                'mcp-protocol-version': currentProtocolVersion
             };
 
             if (accessToken) {
@@ -1588,6 +1600,7 @@
             prompts = [];
             serverCapabilities = {};
             currentServerInfo = null;
+            currentProtocolVersion = MCPProtocolValidator.LATEST_VERSION;
             isConnected = false;
 
             updateAuthUI();
@@ -1879,7 +1892,7 @@
                 const headers = {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json, text/event-stream, */*',
-                    'mcp-protocol-version': '2024-11-05'
+                    'mcp-protocol-version': currentProtocolVersion
                 };
                 applyCustomHeaders(headers, customHeaders);
 
@@ -2142,7 +2155,8 @@
 
             const serverName = currentServerInfo.name || 'Unknown';
             const serverVersion = currentServerInfo.version || 'Unknown';
-            const protocolVersion = currentServerInfo.protocolVersion || 'Unknown';
+            // protocolVersion lives on initialize result, not serverInfo — use the negotiated value.
+            const protocolVersion = currentProtocolVersion || 'Unknown';
 
             let html = `
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
